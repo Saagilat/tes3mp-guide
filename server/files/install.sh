@@ -240,6 +240,9 @@ setup_files() {
     done
     chmod +x "$dest/update_mods.sh"
 
+    # Download management reference
+    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-guide/master/server/management.md" -O "$dest/management.md"
+
     # Download TES3MP server binary
     local TES3MP_URL="https://github.com/TES3MP/TES3MP/releases/download/tes3mp-0.8.1/tes3mp-server-GNU+Linux-x86_64-release-0.8.1-68954091c5-6da3fdea59.tar.gz"
 
