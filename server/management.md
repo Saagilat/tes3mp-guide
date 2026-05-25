@@ -23,7 +23,7 @@ What happens:
 - Rebuilds the Docker image (picks up changes in configs, mods, scripts)
 - Creates and starts a new container
 
-Player progress (characters, inventory, cells) is stored in named volumes `tes3mp-characters` and `tes3mp-cells`. They are not deleted on rebuild, so data is preserved.
+Player progress (characters, inventory, cells) is stored in bind mounts at `./data/players/` and `./data/cells/` on the host filesystem (resolved to `/opt/tes3mp/data/players/` and `/opt/tes3mp/data/cells/`). Unlike named volumes, bind mounts are never automatically removed by Docker — data survives rebuilds, container crashes, and even `docker compose down -v`. No special migration needed.
 
 ---
 

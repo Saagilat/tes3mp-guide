@@ -419,7 +419,7 @@ gather_lua_options() {
 # ────────────────────────────────────────────────────────────
 setup_files() {
     local dest="/opt/tes3mp"
-    mkdir -p "$dest/data" "$dest/mods"
+    mkdir -p "$dest/data" "$dest/data/players" "$dest/data/cells" "$dest/mods"
     chown -R root:root "$dest"
 
     cd "$dest"
@@ -597,8 +597,8 @@ configure_endpoints() {
         sed -i 's/#\(    context: \.\)/    context: ./' "$compose"
         sed -i 's/#\(    dockerfile: export\.dockerfile\)/    dockerfile: export.dockerfile/' "$compose"
         sed -i 's/#\(  volumes:\)/  volumes:/' "$compose"
-        sed -i 's/#\(    - tes3mp-characters:\/mnt\/characters:ro\)/    - tes3mp-characters:\/mnt\/characters:ro/' "$compose"
-        sed -i 's/#\(    - tes3mp-cells:\/mnt\/cells:ro\)/    - tes3mp-cells:\/mnt\/cells:ro/' "$compose"
+        sed -i 's/#\(    - \.\/data\/players:\/mnt\/characters:ro\)/    - .\/data\/players:\/mnt\/characters:ro/' "$compose"
+        sed -i 's/#\(    - \.\/data\/cells:\/mnt\/cells:ro\)/    - .\/data\/cells:\/mnt\/cells:ro/' "$compose"
         sed -i 's/#\(  restart: unless-stopped\)/  restart: unless-stopped/' "$compose"
     fi
 
