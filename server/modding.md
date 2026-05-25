@@ -14,7 +14,7 @@ Use the `update_mods.sh` script, which automates removing old mods, copying new 
 
 2. Push your mods and update the server:
    ```bash
-   rsync -avz ./*.esp ./*.esm user@server:/opt/tes3mp/mods/ && \
+   rsync -avz ./ user@server:/opt/tes3mp/mods/ && \
      ssh user@server "cd /opt/tes3mp && bash update_mods.sh"
    ```
 
@@ -23,7 +23,7 @@ If you are the only person managing mods and don't need existing files — skip 
 ## Option B: Local server (same machine)
 
 ```bash
-sudo cp ./*.esp ./*.esm /opt/tes3mp/mods/
+sudo cp -r ./* /opt/tes3mp/mods/
 cd /opt/tes3mp && sudo bash update_mods.sh
 ```
 
