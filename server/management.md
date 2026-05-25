@@ -1,6 +1,6 @@
 # Managing the TES3MP server (Docker)
 
-All commands are run as root on the VPS.
+All commands are run as root on the VPS from /opt/tes3mp.
 
 | Action | Command | Details |
 |--------|---------|---------|
