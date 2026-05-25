@@ -13,49 +13,6 @@ All commands are run as root on the VPS from /opt/tes3mp.
 | Edit Lua config | `nano /opt/tes3mp/config/server/scripts/config.lua` | Afterwards, run **Restart** to apply changes |
 | Edit ban list | `nano /opt/tes3mp/config/server/data/banlist.json` | Afterwards, run **Restart** to apply changes |
 
----
-
-## Start
-
-```bash
-cd /opt/tes3mp
-docker compose up -d
-```
-
-What happens:
-- Pulls the built image and starts the container in background
-- Container `stop_grace_period` is set to **30 seconds** — enough for TES3MP to save player state before the container exits
-
-> **Note:** the first time you run this (or after a reboot), TES3MP may re-seed the world with default NPCs and items. Player data (characters, inventory, cells) is **not** affected — it persists across restarts in bind mounts at `./data/players/` (→ `/tes3mp/server/data/player` inside the container) and `./data/cells/` (→ `/tes3mp/server/data/cell`).
-
-## Rebuild (mods, server scripts)
-
-Only needed when you've modified server scripts or the Docker image. Mods no longer require a rebuild — see
-the **Restart** section or use `update_mods.sh`.
-
-```bash
-cd /opt/tes3mp
-docker compose up -d --build
-```
-
-What happens:
-- Stops the old container (with 30‑second grace period for saving)
-- Rebuilds the Docker image (picks up changes in mods or scripts)
-- Creates and starts a new container
-
-## Restart
-
-```bash
-cd /opt/tes3mp
-docker compose restart
-```
-
-Sends SIGTERM to TES3MP, which triggers a graceful save (player data, cells, records) before the container exits. The `stop_grace_period: 30s` setting ensures the server has enough time to finish saving before Docker forcefully kills the container.
-
-If the server seems unresponsive during restart, increase `stop_grace_period` to `60s` in `docker-compose.yml`.
-
-> **Fallback (hard restart, risk of data loss):** `docker compose restart --timeout 0`
-
 ## Configuration (bind mounts)
 
 Config files are now stored on the host filesystem at `/opt/tes3mp/config/` and bind-mounted into the container. This means you can edit them with any text editor and changes take effect after a **Restart** (no rebuild needed).
