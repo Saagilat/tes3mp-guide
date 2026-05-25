@@ -130,13 +130,13 @@ gather_options() {
     echo "========================================"
     echo ""
 
-    read -r -p "Server name [tes3mp]: " SERVER_NAME </dev/tty
+    read -r -p "Server name [default: tes3mp]: " SERVER_NAME </dev/tty
     SERVER_NAME="${SERVER_NAME:-tes3mp}"
 
-    read -r -p "Password (leave empty to disable) []: " SERVER_PASSWORD </dev/tty
+    read -r -p "Password (leave empty to disable) [default: (empty)]: " SERVER_PASSWORD </dev/tty
     SERVER_PASSWORD="${SERVER_PASSWORD:-}"
 
-    read -r -p "Max players [4]: " MAX_PLAYERS </dev/tty
+    read -r -p "Max players [default: 4]: " MAX_PLAYERS </dev/tty
     MAX_PLAYERS="${MAX_PLAYERS:-4}"
 
     echo ""
@@ -144,10 +144,10 @@ gather_options() {
     echo "(If unsure, leave the default values)"
     echo ""
 
-    read -r -p "TES3MP server port (UDP) [25565]: " TES3MP_PORT </dev/tty
+    read -r -p "TES3MP server port (UDP) [default: 25565]: " TES3MP_PORT </dev/tty
     TES3MP_PORT="${TES3MP_PORT:-25565}"
 
-    read -r -p "HTTP endpoint port (TCP) [8085]: " HTTP_PORT </dev/tty
+    read -r -p "HTTP endpoint port (TCP) [default: 8085]: " HTTP_PORT </dev/tty
     HTTP_PORT="${HTTP_PORT:-8085}"
 
     echo ""
@@ -162,7 +162,7 @@ gather_options() {
     echo "Lets players download all server mods as a single archive."
     echo "Recommended to enable — safe and convenient."
     echo ""
-    read -r -p "Enable /get-mods? [y/N]: " ENABLE_MODS </dev/tty
+    read -r -p "Enable /get-mods? [default: N]: " ENABLE_MODS </dev/tty
     ENABLE_MODS="${ENABLE_MODS:-n}"
     case "${ENABLE_MODS,,}" in
         y|yes) ENABLE_MODS="yes" ;;
@@ -177,7 +177,7 @@ gather_options() {
     echo "Useful for co-op/RP servers. On PvP/competitive servers it may"
     echo "spoil surprises."
     echo ""
-    read -r -p "Enable /get-world? [y/N]: " ENABLE_WORLD </dev/tty
+    read -r -p "Enable /get-world? [default: N]: " ENABLE_WORLD </dev/tty
     ENABLE_WORLD="${ENABLE_WORLD:-n}"
     case "${ENABLE_WORLD,,}" in
         y|yes) ENABLE_WORLD="yes" ;;
@@ -191,7 +191,7 @@ gather_options() {
     echo "Anyone who knows the server IP can download this data."
     echo "On co-op/RP servers — transparency. On competitive servers — a risk."
     echo ""
-    read -r -p "Enable /get-characters? [y/N]: " ENABLE_CHARACTERS </dev/tty
+    read -r -p "Enable /get-characters? [default: N]: " ENABLE_CHARACTERS </dev/tty
     ENABLE_CHARACTERS="${ENABLE_CHARACTERS:-n}"
     case "${ENABLE_CHARACTERS,,}" in
         y|yes) ENABLE_CHARACTERS="yes" ;;
@@ -207,19 +207,19 @@ gather_options() {
 
     MODS_RATE="5"
     if [[ "$ENABLE_MODS" == "yes" ]]; then
-        read -r -p "  /get-mods rate limit (req/min) [5]: " input </dev/tty
+        read -r -p "  /get-mods rate limit (req/min) [default: 5]: " input </dev/tty
         MODS_RATE="${input:-5}"
     fi
 
     WORLD_RATE="5"
     if [[ "$ENABLE_WORLD" == "yes" ]]; then
-        read -r -p "  /get-world rate limit (req/min) [5]: " input </dev/tty
+        read -r -p "  /get-world rate limit (req/min) [default: 5]: " input </dev/tty
         WORLD_RATE="${input:-5}"
     fi
 
     CHARACTERS_RATE="5"
     if [[ "$ENABLE_CHARACTERS" == "yes" ]]; then
-        read -r -p "  /get-characters rate limit (req/min) [5]: " input </dev/tty
+        read -r -p "  /get-characters rate limit (req/min) [default: 5]: " input </dev/tty
         CHARACTERS_RATE="${input:-5}"
     fi
 }
@@ -438,7 +438,7 @@ build_and_start() {
     echo "=========================================="
     echo ""
     echo "  Server name:     $SERVER_NAME"
-    echo "  Admin password:  ${SERVER_PASSWORD:-(not set)}"
+    echo "  Server password: ${SERVER_PASSWORD:-(not set)}"
     echo "  Max players:     $MAX_PLAYERS"
     echo ""
     echo "  TES3MP port (UDP):  $TES3MP_PORT"
