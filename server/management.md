@@ -4,9 +4,9 @@ All commands are run as root on the VPS from /opt/tes3mp.
 
 | Action | Command | Details |
 |--------|---------|---------|
-| Start | `docker compose up -d --build` | |
-| View live logs | `docker compose logs -f` | |
-| Stop | `docker compose down` | |
+| Start | `cd /opt/tes3mp && docker compose up -d --build` | |
+| View live logs | `cd /opt/tes3mp && docker compose logs -f` | |
+| Stop | `cd /opt/tes3mp && docker compose down` | |
 | Edit config | `nano /opt/tes3mp/data/tes3mp-server-default.cfg` | Afterwards, run **Start** to apply changes |
 
 ---
