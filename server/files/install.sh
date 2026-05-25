@@ -81,13 +81,13 @@ install_docker() {
             systemctl enable --now docker
             ;;
         apt)
-            warn "Docker not found. Installing Docker via apt (docker.io, docker-compose-plugin)..."
+            warn "Docker not found. Installing Docker via apt (docker.io, docker-compose)..."
             apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose-plugin
+            DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose
             systemctl enable --now docker
             ;;
         dnf)
-            dnf install -y docker docker-compose-plugin
+            dnf install -y docker docker-compose
             systemctl enable --now docker
             ;;
     esac
