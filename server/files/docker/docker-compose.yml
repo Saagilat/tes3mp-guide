@@ -7,10 +7,11 @@ services:
       dockerfile: tes3mp.dockerfile
     ports:
       - "25565:25565/udp"
+    stop_grace_period: 30s
     restart: unless-stopped
     volumes:
-      - ./data/players:/tes3mp/players
-      - ./data/cells:/tes3mp/cells
+      - ./data/players:/tes3mp/server/players
+      - ./data/cells:/tes3mp/server/cells
 
   # ⚠️ ALL ENDPOINTS DISABLED BY DEFAULT
   # Uncomment the lines below (and the corresponding location blocks in nginx.conf)

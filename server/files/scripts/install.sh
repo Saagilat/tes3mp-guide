@@ -560,8 +560,8 @@ write_lua_config() {
     sed -i "s/^config\.enforceDataFiles = .*/config.enforceDataFiles = $LUA_ENFORCE_DATA_FILES/" "$cfg"
     sed -i "s/^config\.ignoreScriptErrors = .*/config.ignoreScriptErrors = $LUA_IGNORE_SCRIPT_ERRORS/" "$cfg"
 
-    # Append our marker so future runs know not to overwrite
-    echo "$marker" >> "$cfg"
+    # Append our marker (before return config) so future runs know not to overwrite
+    sed -i "/^return config$/i $marker" "$cfg"
 
     ok "Lua config updated"
 }

@@ -4,14 +4,31 @@ All commands are run as root on the VPS from /opt/tes3mp.
 
 | Action | Command | Details |
 |--------|---------|---------|
-| Start | `cd /opt/tes3mp && docker compose up -d --build` | |
+| Start | `cd /opt/tes3mp && docker compose up -d` | Use `--build` only after changing mods, configs, or scripts |
+| Restart | `cd /opt/tes3mp && docker compose restart` | Sends SIGTERM to TES3MP; with `stop_grace_period: 30s` the server saves before exit |
+| Rebuild (mods, configs, scripts) | `cd /opt/tes3mp && docker compose up -d --build` | Only when you need to pick up changes |
 | View live logs | `cd /opt/tes3mp && docker compose logs -f` | |
 | Stop | `cd /opt/tes3mp && docker compose down` | |
-| Edit config | `nano /opt/tes3mp/data/tes3mp-server-default.cfg` | Afterwards, run **Start** to apply changes |
+| Edit config | `nano /opt/tes3mp/data/tes3mp-server-default.cfg` | Afterwards, run **Restart** to apply changes |
 
 ---
 
-## Build and start
+## Start
+
+```bash
+cd /opt/tes3mp
+docker compose up -d
+```
+
+What happens:
+- Pulls the built image and starts the container in background
+- Container `stop_grace_period` is set to **30 seconds** — enough for TES3MP to save player state before the container exits
+
+> **Note:** the first time you run this (or after a reboot), TES3MP may re-seed the world with default NPCs and items. Player data (characters, inventory, cells) is **not** affected — it persists across restarts in bind mounts at `./data/players/` (→ `/tes3mp/server/players` inside the container) and `./data/cells/` (→ `/tes3mp/server/cells`).
+
+## Rebuild (mods, configs, scripts)
+
+Only needed when you've modified `server/` files, mods, or the Docker image:
 
 ```bash
 cd /opt/tes3mp
@@ -19,11 +36,45 @@ docker compose up -d --build
 ```
 
 What happens:
-- Stops the old container
+- Stops the old container (with 30‑second grace period for saving)
 - Rebuilds the Docker image (picks up changes in configs, mods, scripts)
 - Creates and starts a new container
 
-Player progress (characters, inventory, cells) is stored in bind mounts at `./data/players/` and `./data/cells/` on the host filesystem (resolved to `/opt/tes3mp/data/players/` and `/opt/tes3mp/data/cells/`). Unlike named volumes, bind mounts are never automatically removed by Docker — data survives rebuilds, container crashes, and even `docker compose down -v`. No special migration needed.
+## Restart
+
+```bash
+cd /opt/tes3mp
+docker compose restart
+```
+
+Sends SIGTERM to TES3MP, which triggers a graceful save (player data, cells, records) before the container exits. The `stop_grace_period: 30s` setting ensures the server has enough time to finish saving before Docker forcefully kills the container.
+
+If the server seems unresponsive during restart, increase `stop_grace_period` to `60s` in `docker-compose.yml`.
+
+> **Fallback (hard restart, risk of data loss):** `docker compose restart --timeout 0`
+
+## Data persistence
+
+Player progress (characters, inventory, cells) is stored in bind mounts on the host filesystem:
+
+| Inside container | On host |
+|-----------------|---------|
+| `/tes3mp/server/players/` | `/opt/tes3mp/data/players/` |
+| `/tes3mp/server/cells/` | `/opt/tes3mp/data/cells/` |
+
+Why `/tes3mp/server/players` and not `/tes3mp/players`? Because TES3MP's config sets `home = ./server`, and by default it writes player data to `./players` relative to that home directory. The bind mounts mirror exactly where TES3MP writes.
+
+Unlike named volumes, bind mounts are never automatically removed by Docker — data survives rebuilds, container crashes, and even `docker compose down -v`.
+
+### How saving works
+
+TES3MP saves player data in three ways:
+
+1. **On disconnect** — when a player leaves, `OnPlayerDisconnect` fires and calls `SaveToDrive()`
+2. **Auto-save interval** — by default every **300 seconds (5 minutes)**, all players, world, and record stores are serialized to disk
+3. **On server shutdown** — when the server receives SIGTERM (e.g. `docker compose restart` or `docker compose down`), it calls `OnServerExit` which triggers a final save
+
+The auto-save interval (`config.autoSaveInterval` in `config.lua`) is your safety net — even if the server crashes, you lose at most 5 minutes of progress.
 
 ---
 
