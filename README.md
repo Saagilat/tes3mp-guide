@@ -34,3 +34,9 @@ Collection of guides for setting up and managing a TES3MP servers, and installin
 - [Server installation](server/install.md)
 - [Server modding (mods and Lua plugins)](server/modding.md)
 - [Server management](server/management.md)
+
+## Links
+
+- [TES3MP on GitHub](https://github.com/TES3MP/TES3MP)
+
+Thanks to David Cernat for making TES3MP. My childhood dream come true!
