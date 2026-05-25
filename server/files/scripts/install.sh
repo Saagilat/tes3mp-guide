@@ -705,6 +705,15 @@ build_and_start() {
     local dest="/opt/tes3mp"
     cd "$dest"
 
+    # Ensure requiredDataFiles.json is a file, not a directory
+    # Docker changes it to a directory on restart if it doesn't exist.
+    if [[ -d "$dest/data/requiredDataFiles.json" ]]; then
+        rm -rf "$dest/data/requiredDataFiles.json"
+    fi
+    if [[ ! -f "$dest/data/requiredDataFiles.json" ]]; then
+        echo '[]' > "$dest/data/requiredDataFiles.json"
+    fi
+
     info "Building Docker image (this may take a minute)..."
     docker compose up -d --build 2>&1 || {
         err "Failed to start the container. Check the output above."
