@@ -26,6 +26,8 @@ Open this file and add the following line at the end:
 include = mods.cfg
 ```
 
+> **Important**: Do **not** wrap filenames in quotes, even if they contain spaces. For example, `content=Dark Brotherhood Attacks Once - Delayed Attacks.ESP` is correct — **no** quotes around the path.
+
 ## 3. How to update mods
 
 Download and extract the archive again — the new files will overwrite the old ones. No changes to `openmw.cfg` are needed.
