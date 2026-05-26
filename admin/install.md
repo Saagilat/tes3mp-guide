@@ -24,9 +24,9 @@ The script will ask:
 - **TES3MP port (UDP)** (default: `25565`)
 ### HTTP endpoints
 HTTP port 8085 is only opened if at least one endpoint is enabled.
-- **Enable `/get-mods`** — mod pack for players (default: no)
-- **Enable `/get-world`** — world state (cells), suitable for co-op/RP (default: no)
-- **Enable `/get-characters`** — player data (inventory, skills, spells, quests) — sensitive (default: no)
+- **Enable `/get-mods`** — mod pack (default: no)
+- **Enable `/get-world`** — world state (default: no)
+- **Enable `/get-characters`** — characters data (default: no)
 
 For each enabled endpoint you can set a **rate limit** in requests per minute (default: `5`, enter `0` to disable).
 

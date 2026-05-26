@@ -154,21 +154,21 @@ gather_options() {
     echo "server data. The HTTP port (8085) is only opened if at least"
     echo "one endpoint is enabled. Each endpoint is disabled by default."
     echo ""
-    read -r -p "Enable /get-mods (mod pack — recommended)? [y/N]: " ENABLE_MODS </dev/tty
+    read -r -p "Enable /get-mods? [y/N]: " ENABLE_MODS </dev/tty
     ENABLE_MODS="${ENABLE_MODS:-n}"
     case "${ENABLE_MODS,,}" in
         y|yes) ENABLE_MODS="yes" ;;
         *)     ENABLE_MODS="no" ;;
     esac
 
-    read -r -p "Enable /get-world (world state — co-op/RP)? [y/N]: " ENABLE_WORLD </dev/tty
+    read -r -p "Enable /get-world? [y/N]: " ENABLE_WORLD </dev/tty
     ENABLE_WORLD="${ENABLE_WORLD:-n}"
     case "${ENABLE_WORLD,,}" in
         y|yes) ENABLE_WORLD="yes" ;;
         *)     ENABLE_WORLD="no" ;;
     esac
 
-    read -r -p "Enable /get-characters (player data — sensitive)? [y/N]: " ENABLE_CHARACTERS </dev/tty
+    read -r -p "Enable /get-characters? [y/N]: " ENABLE_CHARACTERS </dev/tty
     ENABLE_CHARACTERS="${ENABLE_CHARACTERS:-n}"
     case "${ENABLE_CHARACTERS,,}" in
         y|yes) ENABLE_CHARACTERS="yes" ;;
