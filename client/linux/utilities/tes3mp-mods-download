@@ -102,18 +102,18 @@ if [ ! -d "$DATA_FILES" ]; then
     exit 1
 fi
 
-# --- Extract hostname from tes3mp-client-default.cfg ---
+# --- Extract destinationAddress from tes3mp-client-default.cfg ---
 SERVER_HOST=""
 while IFS='=' read -r key value; do
     key="${key// /}"
-    if [ "${key,,}" = "hostname" ]; then
-        SERVER_HOST="${value/ /}"
+    if [ "${key,,}" = "destinationaddress" ]; then
+        SERVER_HOST="${value//[$'\t\r ']/}"
         break
     fi
 done < "$CLIENT_DEFAULT"
 
 if [ -z "$SERVER_HOST" ]; then
-    err "Could not find 'hostname' in $CLIENT_DEFAULT"
+    err "Could not find 'destinationAddress' in $CLIENT_DEFAULT"
     exit 1
 fi
 
