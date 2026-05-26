@@ -12,13 +12,13 @@ The `tes3mp-download-mods` script automates everything: it downloads the latest 
 |----------|--------|
 | 🐧 Linux | [`tes3mp-download-mods`](../tools/linux/player/tes3mp-download-mods) |
 
-### 1. Create the client config
+### 1. Get the script
 
-```bash
-mkdir -p ~/.config/tes3mp
-```
+Download the [`tools/linux/player/`](../tools/linux/player/) folder from the repository. It contains the script and a config template.
 
-Create `~/.config/tes3mp/client.conf` with your actual paths:
+### 2. Edit the config
+
+Open `client.conf` and set your paths:
 
 ```ini
 CLIENT_DEFAULT=/path/to/tes3mp-client-default.cfg
@@ -32,7 +32,7 @@ OPENMW_CFG=/home/user/.config/openmw/openmw.cfg
 | `DATA_FILES` | Path to the game's `Data Files` folder (where `.esp`/`.esm`/`.omwaddon` files go) |
 | `OPENMW_CFG` | Path to `openmw.cfg` |
 
-Typical locations of `openmw.cfg` and `Data Files` by platform:
+Typical locations by platform:
 
 | Platform | `openmw.cfg` | `Data Files` |
 |----------|-------------|--------------|
@@ -42,13 +42,13 @@ Typical locations of `openmw.cfg` and `Data Files` by platform:
 
 > **Note**: The `DATA_FILES` path may contain spaces. Write the path as-is (do **not** use quotes or backslashes).
 
-### 2. Run the script
+### 3. Run the script
 
 ```bash
 tes3mp-download-mods
 ```
 
-> **Pro tip**: You can add `tes3mp-download-mods` as a **pre-launch command** in Steam (TES3MP) so mods update automatically every time you launch the game.
+> **Pro tip**: Add `tes3mp-download-mods` as a **pre-launch command** in Steam (TES3MP) so mods update automatically every time you launch the game.
 
 The script will:
 1. Read the server address from `tes3mp-client-default.cfg`
