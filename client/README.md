@@ -6,11 +6,41 @@ Guides and scripts for players setting up TES3MP.
 
 | OS | Guide |
 |----|-------|
-| 🐧 Linux | [Steam Proton setup](linux_proton/install.md) |
+| 🐧 Linux | [Steam Proton setup](linux/proton/install.md) |
 
-## Documentation
+## Modding
 
-| File | Description |
-|------|-------------|
-| [modding.md](modding.md) | How to use mod scripts to auto-install server mods |
-| [customization.md](customization.md) | Client-side configuration and tweaks |
+To auto-install server mods on your client, download the appropriate script for your OS and follow the steps below.
+
+| OS | Script | Config |
+|----|--------|--------|
+| 🐧 Linux | [`download`](linux/mods/download) | [`client.conf`](linux/mods/client.conf) |
+
+## UI customization
+
+### Fix the font
+
+- Download the archive **TrueType fonts for OpenMW** from Nexus Mods:  
+  https://www.nexusmods.com/morrowind/mods/46854
+- Extract the contents into your `openmw-profile` directory
+- Open `settings.cfg` inside your `openmw-profile` (appears once you change any settings in game)
+- Add these lines:
+
+```
+[GUI]
+ttf resolution = 120
+font size = 20
+scaling factor = 1.3
+```
+
+<details>
+<summary>Parameter explanations</summary>
+
+- `font size` — range is limited to 12–20
+- `scaling factor` — determines the UI size
+</details>
+
+<details>
+<summary>OpenMW font documentation</summary>
+https://openmw.readthedocs.io/en/openmw-0.47.0_a/reference/modding/font.html
+</details>
