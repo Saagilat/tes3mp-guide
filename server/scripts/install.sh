@@ -409,11 +409,11 @@ setup_files() {
     for f in update_mods.sh; do
         wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server/scripts/$f" -O "$dest/$f"
     done
-    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server/linux/mods/upload" -O "$dest/tes3mp-upload-mods"
+    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/admin/linux/mods/upload" -O "$dest/tes3mp-upload-mods"
     chmod +x "$dest/update_mods.sh" "$dest/tes3mp-upload-mods"
 
     # Download management reference
-    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server/management.md" -O "$dest/management.md"
+    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/admin/management.md" -O "$dest/management.md"
 
     # Download TES3MP server binary
     local TES3MP_URL="https://github.com/TES3MP/TES3MP/releases/download/tes3mp-0.8.1/tes3mp-server-GNU+Linux-x86_64-release-0.8.1-68954091c5-6da3fdea59.tar.gz"

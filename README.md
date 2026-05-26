@@ -6,8 +6,9 @@ Collection of guides and scripts for setting up and managing TES3MP servers with
 
 | Directory | Description |
 |-----------|-------------|
-| [server/](server/README.md) | Documentation and files for server setup, management, and modding |
-| [client/](client/README.md) | Documentation for players: mod installation, customization |
+| [admin/](admin/README.md) | **Server administrator docs**: installation, management, config reference, admin tools |
+| [server/](server/README.md) | **Server files**: Docker setup, scripts that run on the server |
+| [client/](client/README.md) | **For players**: client installation, modding, customization |
 
 ## Links
 

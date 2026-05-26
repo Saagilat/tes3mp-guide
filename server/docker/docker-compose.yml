@@ -19,7 +19,7 @@ services:
 
   # ⚠️ ALL ENDPOINTS DISABLED BY DEFAULT
   # Uncomment the lines below (and the corresponding location blocks in nginx.conf)
-  # to enable. See server/management.md for implications.
+  # to enable. See admin/management.md for implications.
   #
   #nginx:
   #  image: nginx:alpine
