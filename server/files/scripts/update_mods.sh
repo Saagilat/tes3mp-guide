@@ -3,15 +3,15 @@
 # update_mods.sh — automatic mod updater for TES3MP server
 #
 # What it does:
-#   1. Removes all .esp/.esm from data/ except original ones (Morrowind, Tribunal, Bloodmoon)
-#   2. Copies all .esp/.esm from mods/ to data/
-#   3. Computes CRC32 for all .esp/.esm in data/
+#   1. Removes all .esp/.esm/.omwaddon/.omwscripts/.omwgame from data/ except original ones (Morrowind, Tribunal, Bloodmoon)
+#   2. Copies all .esp/.esm/.omwaddon/.omwscripts/.omwgame from mods/ to data/
+#   3. Computes CRC32 for all mod files in data/
 #   4. Generates data/requiredDataFiles.json
 #   5. Creates mods.zip for distribution to players
 #   6. Rebuilds and restarts the Docker container
 #
 # Usage:
-#   Place .esp/.esm files in mods/
+#   Place .esp/.esm/.omwaddon/.omwscripts/.omwgame files in mods/
 #   Run: bash update_mods.sh
 #
 # Removing a mod:
@@ -49,7 +49,10 @@ fi
 
 # --- Step 1: Remove mods from data/ (keep only originals) ---
 echo "[1/6] Removing old mods from data/..."
-for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM; do
+for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM \
+            "$DATA_DIR"/*.omwaddon "$DATA_DIR"/*.OMWADDON \
+            "$DATA_DIR"/*.omwscripts "$DATA_DIR"/*.OMWSCRIPTS \
+            "$DATA_DIR"/*.omwgame "$DATA_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
@@ -79,7 +82,10 @@ if [ ! -d "$MODS_DIR" ]; then
 fi
 
 copied=0
-for file in "$MODS_DIR"/*.esp "$MODS_DIR"/*.ESp "$MODS_DIR"/*.esm "$MODS_DIR"/*.ESM "$MODS_DIR"/*.ESP "$MODS_DIR"/*.EsM; do
+for file in "$MODS_DIR"/*.esp "$MODS_DIR"/*.ESp "$MODS_DIR"/*.esm "$MODS_DIR"/*.ESM "$MODS_DIR"/*.ESP "$MODS_DIR"/*.EsM \
+            "$MODS_DIR"/*.omwaddon "$MODS_DIR"/*.OMWADDON "$MODS_DIR"/*.Omwaddon "$MODS_DIR"/*.oMwAddon \
+            "$MODS_DIR"/*.omwscripts "$MODS_DIR"/*.OMWSCRIPTS \
+            "$MODS_DIR"/*.omwgame "$MODS_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
@@ -126,9 +132,12 @@ result = []
 for orig in original_files:
     result.append({orig: []})
 
-# Collect .esp/.esm files (mods)
+# Collect mod files (esp, esm, omwaddon, omwscripts, omwgame)
 files = []
-for pattern in ('*.esp', '*.ESP', '*.esm', '*.ESM'):
+for pattern in ('*.esp', '*.ESP', '*.esm', '*.ESM',
+                '*.omwaddon', '*.OMWADDON',
+                '*.omwscripts', '*.OMWSCRIPTS',
+                '*.omwgame', '*.OMWGAME'):
     files.extend(sorted(glob.glob(os.path.join(data_dir, pattern))))
 
 for filepath in files:
@@ -160,9 +169,12 @@ PYEOF
 echo ""
 echo "[5/6] Creating mods.zip for distribution to players..."
 
-# Collect mods (all .esp/.esm except originals)
+# Collect mods (all .esp/.esm/.omwaddon/.omwscripts/.omwgame except originals)
 mods_to_zip=()
-for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM; do
+for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM \
+            "$DATA_DIR"/*.omwaddon "$DATA_DIR"/*.OMWADDON \
+            "$DATA_DIR"/*.omwscripts "$DATA_DIR"/*.OMWSCRIPTS \
+            "$DATA_DIR"/*.omwgame "$DATA_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
