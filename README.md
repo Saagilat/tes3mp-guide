@@ -7,7 +7,7 @@ Collection of guides and scripts for setting up and managing TES3MP servers with
 | Directory | Description |
 |-----------|-------------|
 | [server/](server/README.md) | Documentation and files for server setup, management, and modding |
-| [client/](client/README.md) | Documentation for players: mod installation, customization, Proton setup |
+| [client/](client/README.md) | Documentation for players: mod installation, customization |
 | [tools/](tools/README.md) | Platform-specific utilities: mod upload/download scripts, localization |
 
 ## Links
