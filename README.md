@@ -1,18 +1,15 @@
 # TES3MP Easy Setup
 
-Collection of guides and scripts for setting up and managing TES3MP servers with some QOL, and installing the TES3MP client.
+Набор гайдов и скриптов для установки и управления TES3MP.
 
-## Contents
+## Кто вы?
 
-| Directory | Description |
-|-----------|-------------|
-| [admin/](admin/README.md) | **Server administrator docs**: installation, management, config reference, admin tools |
-| [server/](server/README.md) | **Server files**: Docker setup, scripts that run on the server |
-| [client/](client/README.md) | **For players**: client installation, modding, customization |
+- **Игрок (клиент)** — [client/](client/README.md): установка TES3MP, Proton, моды, локализация.
+- **Администратор сервера** — [admin/](admin/README.md): установка Docker, управление, настройки, загрузка модов.
 
-## Links
+---
 
-- [TES3MP on GitHub](https://github.com/TES3MP/TES3MP)
-- [OpenMW on GitHub](https://github.com/OpenMW/openmw)
+- [TES3MP на GitHub](https://github.com/TES3MP/TES3MP)
+- [OpenMW на GitHub](https://github.com/OpenMW/openmw)
 
-Thanks to David Cernat for making TES3MP, and to the OpenMW team for making Morrowind open-source and multiplatform. My childhood dream come true!
+Спасибо David Cernat за TES3MP и команде OpenMW за то, что сделали Morrowind открытым и кроссплатформенным. Детская мечта сбылась!
