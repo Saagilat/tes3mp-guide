@@ -13,7 +13,7 @@
 
 ```bash
 mkdir -p ~/.config/tes3mp
-cp admin/linux/mods/tes3mp-mods-upload.conf ~/.config/tes3mp/
+cp admin/linux/utilities/tes3mp-mods-upload.conf ~/.config/tes3mp/
 ```
 
 ### 2. Отредактируйте конфиг
@@ -44,7 +44,7 @@ ssh-copy-id tes3mp-server                   # скопировать ключ н
 ### 4. Запустите скрипт
 
 ```bash
-./admin/linux/mods/tes3mp-mods-upload
+./admin/linux/utilities/tes3mp-mods-upload
 ```
 
 Скрипт синхронизирует вашу локальную папку модов с сервером и запустит `update_mods.sh`.

@@ -14,7 +14,7 @@ To auto-install server mods on your client, download the appropriate script for 
 
 | OS | Script | Config |
 |----|--------|--------|
-| 🐧 Linux | [`tes3mp-mods-download`](linux/mods/tes3mp-mods-download) | [`client.conf`](linux/mods/client.conf) |
+| 🐧 Linux | [`tes3mp-mods-download`](linux/utilities/tes3mp-mods-download) | [`tes3mp-mods-download.conf`](linux/utilities/tes3mp-mods-download.conf) |
 
 ## UI customization
 

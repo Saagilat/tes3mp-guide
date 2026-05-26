@@ -5,7 +5,7 @@
 ## Файлы
 
 - `tes3mp-mods-download` — скрипт для скачивания модов с сервера
-- `client.conf` — пример конфигурации
+- `tes3mp-mods-download.conf` — пример конфигурации
 
 ## Как настроить
 
@@ -13,13 +13,13 @@
 
 ```bash
 mkdir -p ~/.config/tes3mp
-cp client/linux/mods/client.conf ~/.config/tes3mp/
+cp client/linux/utilities/tes3mp-mods-download.conf ~/.config/tes3mp/
 ```
 
 ### 2. Отредактируйте конфиг
 
 ```bash
-nano ~/.config/tes3mp/client.conf
+nano ~/.config/tes3mp/tes3mp-mods-download.conf
 ```
 
 Укажите правильные пути для вашей системы:
@@ -33,7 +33,7 @@ nano ~/.config/tes3mp/client.conf
 ### 3. Запустите скрипт
 
 ```bash
-./client/linux/mods/tes3mp-mods-download
+./client/linux/utilities/tes3mp-mods-download
 ```
 
 Скрипт:

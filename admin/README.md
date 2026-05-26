@@ -16,7 +16,7 @@ Documentation and tools for TES3MP server administrators.
 
 | Script | Config | Description |
 |--------|--------|-------------|
-| [`linux/mods/tes3mp-mods-upload`](linux/mods/tes3mp-mods-upload) | [`linux/mods/tes3mp-mods-upload.conf`](linux/mods/tes3mp-mods-upload.conf) | Upload mods to the server from your local machine |
+| [`linux/utilities/tes3mp-mods-upload`](linux/utilities/tes3mp-mods-upload) | [`linux/utilities/tes3mp-mods-upload.conf`](linux/utilities/tes3mp-mods-upload.conf) | Upload mods to the server from your local machine |
 
 ## See also
 

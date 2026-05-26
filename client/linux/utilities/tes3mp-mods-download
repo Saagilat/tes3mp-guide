@@ -2,12 +2,12 @@
 #
 # tes3mp-download-mods — Download and install mods from a TES3MP server
 #
-# This script reads the client configuration from ~/.config/tes3mp/client.conf,
+# This script reads the client configuration from ~/.config/tes3mp/tes3mp-mods-download.conf,
 # downloads the latest mod pack from the server, replaces old mods in Data Files,
 # and ensures openmw.cfg includes the mods config.
 #
-# Configuration (~/.config/tes3mp/client.conf):
-# Copy from: https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/tools/linux/player/client.conf
+# Configuration (~/.config/tes3mp/tes3mp-mods-download.conf):
+# Copy from: https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/client/linux/utilities/tes3mp-mods-download.conf
 #
 # The mod archive is downloaded from port 8085 (default HTTP endpoint port
 # for the nginx container serving the mod pack).
@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-CONFIG_FILE="$HOME/.config/tes3mp/client.conf"
+CONFIG_FILE="$HOME/.config/tes3mp/tes3mp-mods-download.conf"
 
 # Colors
 RED='\033[0;31m'
@@ -38,7 +38,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "Download the template:"
     echo "  mkdir -p ~/.config/tes3mp"
     echo "  wget -O $CONFIG_FILE \\"
-    echo "    https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/tools/linux/player/client.conf"
+    echo "    https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/client/linux/utilities/tes3mp-mods-download.conf"
     echo ""
     echo "Then edit it: nano $CONFIG_FILE"
     exit 1
