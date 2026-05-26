@@ -4,32 +4,17 @@ If the server provides a ready-made mod pack (as described in the [server admin 
 
 > **Prerequisites**: You must have TES3MP installed and configured.
 
-## Quick setup (recommended)
+## Quick setup (automated)
 
-The `tes3mp-download-mods` script automates everything: it downloads the latest mods, replaces old ones, and configures `openmw.cfg`.
+The [`tes3mp-download-mods`](../tools/linux/player/tes3mp-download-mods) script automates everything: it downloads the latest mods, replaces old ones, and configures `openmw.cfg`.
 
-### 1. Install the script (one time)
-
-```bash
-# Download
-wget https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/tools/linux/player/tes3mp-download-mods
-
-# Make executable and install
-chmod +x tes3mp-download-mods
-sudo mv tes3mp-download-mods /usr/local/bin/
-```
-
-Or copy from the repository directly.
-
-### 2. Create the client config (one time)
+### 1. Create the client config
 
 ```bash
 mkdir -p ~/.config/tes3mp
-wget -O ~/.config/tes3mp/client.conf \
-  https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/tools/linux/player/client.conf
 ```
 
-Edit the config with your actual paths:
+Create `~/.config/tes3mp/client.conf` with your actual paths:
 
 ```ini
 CLIENT_DEFAULT=/path/to/tes3mp-client-default.cfg
@@ -37,19 +22,29 @@ DATA_FILES=/path/to/OpenMW/Data Files
 OPENMW_CFG=/home/user/.config/openmw/openmw.cfg
 ```
 
-- `CLIENT_DEFAULT` — path to your `tes3mp-client-default.cfg` (the script reads the server address from it)
-- `DATA_FILES` — path to the game's `Data Files` folder (where `.esp`/`.esm`/`.omwaddon` files go)
-- `OPENMW_CFG` — path to `openmw.cfg` (typically `~/.config/openmw/openmw.cfg` on Linux)
+| Parameter | Description |
+|-----------|-------------|
+| `CLIENT_DEFAULT` | Path to `tes3mp-client-default.cfg` (the script reads the server address from it) |
+| `DATA_FILES` | Path to the game's `Data Files` folder (where `.esp`/`.esm`/`.omwaddon` files go) |
+| `OPENMW_CFG` | Path to `openmw.cfg` |
 
-The mod archive is always downloaded from port `8085` — this is the default HTTP port used by the server's nginx container.
+Typical locations of `openmw.cfg` and `Data Files` by platform:
+
+| Platform | `openmw.cfg` | `Data Files` |
+|----------|-------------|--------------|
+| Linux | `~/.config/openmw/openmw.cfg` | Wherever Morrowind is installed, e.g. `~/Games/Morrowind/Data Files` |
+| Windows | `%USERPROFILE%\Documents\My Games\OpenMW\openmw.cfg` | Wherever Morrowind is installed, e.g. `C:\Games\Morrowind\Data Files` |
+| macOS | `~/Library/Preferences/openmw/openmw.cfg` | Wherever Morrowind is installed |
 
 > **Note**: The `DATA_FILES` path may contain spaces. Write the path as-is (do **not** use quotes or backslashes).
 
-### 3. Install mods
+### 2. Run the script
 
 ```bash
 tes3mp-download-mods
 ```
+
+> **Pro tip**: You can add `tes3mp-download-mods` as a **pre-launch command** in Steam (TES3MP) so mods update automatically every time you launch the game.
 
 The script will:
 1. Read the server address from `tes3mp-client-default.cfg`
@@ -59,8 +54,6 @@ The script will:
 5. Add `include = mods.cfg` to `openmw.cfg` if not already present
 
 To update mods later, just run `tes3mp-download-mods` again.
-
-> **Pro tip**: You can add `tes3mp-download-mods` as a **pre-launch command** in Steam (TES3MP) so mods update automatically every time you launch the game.
 
 ---
 
@@ -77,14 +70,7 @@ Download the archive using your browser or any download tool, then extract its c
 
 ### 2. Enable mods in OpenMW config
 
-Locate your `openmw.cfg` file — it is **not** in the game folder, but in your user profile:
-
-| Platform | Typical path |
-|----------|-------------|
-| Linux    | `~/.config/openmw/openmw.cfg` or `~/openmw-profile/openmw.cfg` |
-| Windows  | `%USERPROFILE%\Documents\My Games\OpenMW\openmw.cfg` |
-
-Open this file and add the following line at the end:
+Open your `openmw.cfg` and add the following line at the end:
 
 ```
 include = mods.cfg
