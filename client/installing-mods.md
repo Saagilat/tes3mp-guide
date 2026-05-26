@@ -16,15 +16,15 @@ Create `~/.config/tes3mp/client.conf`:
 CLIENT_DEFAULT=/path/to/tes3mp-client-default.cfg
 DATA_FILES=/path/to/OpenMW/Data Files
 OPENMW_CFG=/home/user/.config/openmw/openmw.cfg
-HTTP_PORT=8085
 ```
 
 - `CLIENT_DEFAULT` — path to your `tes3mp-client-default.cfg` (the script reads the server address from it)
 - `DATA_FILES` — path to the game's `Data Files` folder (where `.esp`/`.esm`/`.omwaddon` files go)
 - `OPENMW_CFG` — path to `openmw.cfg` (typically `~/.config/openmw/openmw.cfg` on Linux)
-- `HTTP_PORT` — the HTTP endpoint port (default: `8085`, change if the admin uses a different one)
 
-> **Note**: The `DATA_FILES` path may contain spaces. In the config file, do **not** use quotes — just write the path as-is.
+The mod archive is always downloaded from port `8085` — this is the default HTTP port used by the server's nginx container.
+
+> **Note**: The `DATA_FILES` path may contain spaces. Write the path as-is (do **not** use quotes or backslashes).
 
 ### 2. Install mods
 

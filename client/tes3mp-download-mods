@@ -8,9 +8,11 @@
 #
 # Configuration (~/.config/tes3mp/client.conf):
 #   CLIENT_DEFAULT=/path/to/tes3mp-client-default.cfg
-#   DATA_FILES=/path/to/OpenMW/Data\ Files
+#   DATA_FILES=/path/to/OpenMW/Data Files
 #   OPENMW_CFG=/path/to/openmw.cfg
-#   HTTP_PORT=8085
+#
+# The mod archive is downloaded from port 8085 (default HTTP endpoint port
+# for the nginx container serving the mod pack).
 #
 # Usage:
 #   tes3mp-download-mods
@@ -39,12 +41,37 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "  CLIENT_DEFAULT=/home/user/Games/tes3mp/tes3mp-client-default.cfg"
     echo "  DATA_FILES=/home/user/Games/OpenMW/Data Files"
     echo "  OPENMW_CFG=/home/user/.config/openmw/openmw.cfg"
-    echo "  HTTP_PORT=8085"
+    echo ""
+    echo "Paths with spaces: do NOT use quotes or backslashes — write the path as-is."
+    echo "Lines starting with # are ignored. Empty lines are ignored."
+    echo ""
+    echo "The mod archive is downloaded from port 8085 (server default)."
     exit 1
 fi
 
-# --- Source config ---
-source "$CONFIG_FILE"
+# --- Parse config (manual, to handle spaces in values properly) ---
+while IFS='=' read -r key value; do
+    # Trim leading/trailing whitespace from key
+    key="${key#"${key%%[![:space:]]*}"}"
+    key="${key%"${key##*[![:space:]]}"}"
+
+    # Skip comments and empty lines
+    case "$key" in
+        \#*|'') continue ;;
+    esac
+
+    # Trim leading/trailing whitespace from value
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+
+    # Remove surrounding quotes if present
+    case "$value" in
+        \"*\") value="${value#\"}"; value="${value%\"}" ;;
+        \'*\') value="${value#\'}"; value="${value%\'}" ;;
+    esac
+
+    printf -v "$key" "%s" "$value"
+done < "$CONFIG_FILE"
 
 # --- Validate config ---
 if [ -z "${CLIENT_DEFAULT:-}" ]; then
@@ -62,7 +89,7 @@ if [ -z "${OPENMW_CFG:-}" ]; then
     exit 1
 fi
 
-HTTP_PORT="${HTTP_PORT:-8085}"
+HTTP_PORT=8085
 
 # --- Check dependencies ---
 for cmd in curl unzip; do
