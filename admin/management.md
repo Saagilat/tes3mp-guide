@@ -12,7 +12,7 @@ All commands are run as root on the VPS from /opt/tes3mp.
 | Edit config | `nano /opt/tes3mp/config/tes3mp-server-default.cfg` | Afterwards, run **Restart** to apply changes |
 | Edit Lua config | `nano /opt/tes3mp/config/server/scripts/config.lua` | Afterwards, run **Restart** to apply changes |
 | Edit ban list | `nano /opt/tes3mp/config/server/data/banlist.json` | Afterwards, run **Restart** to apply changes |
-| Change role | `nano /opt/tes3mp/data/players/<accountName>.json` | 3 = owner, 2 = admin, 1 = moderator, 0 = player Afterwards, run **Restart** to apply changes |
+| Change role | `nano /opt/tes3mp/data/players/<accountName>.json` change staff rank | 3 = owner, 2 = admin, 1 = moderator, 0 = player Afterwards, run **Restart** to apply changes |
 
 ## Configuration (bind mounts)
 
