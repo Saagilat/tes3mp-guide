@@ -1,6 +1,6 @@
 # TES3MP Easy setup
 
-Collection of guides and srcripts for setting up and managing a TES3MP servers with some QOL, and installing the TES3MP client.
+Collection of guides and scripts for setting up and managing TES3MP servers with some QOL, and installing the TES3MP client.
 
 ## 🎮 For Players
 
@@ -14,6 +14,8 @@ Collection of guides and srcripts for setting up and managing a TES3MP servers w
 
 ### Configuration
 
+- [Mod auto-installer script (tes3mp-download-mods)](tools/linux/player/tes3mp-download-mods)
+
 - [Installing mods from the server](client/installing-mods.md)
 
 - [UI customization (fonts, scaling)](client/customization.md)
@@ -21,7 +23,7 @@ Collection of guides and srcripts for setting up and managing a TES3MP servers w
 <details>
 <summary>🌐 Localization</summary>
 
-- [Русская локализация](client/localization/linux/russian/README.md)
+- [Русская локализация](tools/linux/player/localization/russian/README.md)
 
 </details>
 
@@ -32,6 +34,7 @@ Collection of guides and srcripts for setting up and managing a TES3MP servers w
 ### 🐧 Linux
 
 - [Server installation](server/install.md)
+- [Mod upload script (tes3mp-upload-mods)](tools/linux/admin/tes3mp-upload-mods)
 - [Server modding (mods and Lua plugins)](server/modding.md)
 - [Server management](server/management.md)
 
