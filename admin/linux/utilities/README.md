@@ -1,40 +1,40 @@
 # Admin Mods Upload
 
-Скрипт для загрузки модов на сервер TES3MP.
+Script for uploading mods to a TES3MP server.
 
-## Как настроить
+## Setup
 
-### 1. Отредактируйте конфиг
+### 1. Edit the config
 
 ```bash
 nano admin/linux/utilities/tes3mp-mods-upload.conf
 ```
 
-### 2. Настройте SSH (чтобы работало `ssh tes3mp-server`)
+### 2. Configure SSH (so that `ssh tes3mp-server` works)
 
-Добавьте в `~/.ssh/config` (подставьте свой IP):
+Add to `~/.ssh/config` (substitute your IP):
 
 ```
 Host tes3mp-server
-    HostName <ip-адрес сервера>
-    User <имя пользователя на сервере>
+    HostName <server-ip>
+    User <server-username>
 ```
 
-Настройте ключ (потребуется пароль от сервера):
+Set up a key (the server password will be required):
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N "" && ssh-copy-id tes3mp-server
 ```
 
-### 3. Запустите
+### 3. Run
 
 ```bash
 ./admin/linux/utilities/tes3mp-mods-upload
 ```
 
-## Переменные конфига
+## Config variables
 
-| Переменная | Описание                        | Пример                    |
-|------------|---------------------------------|---------------------------|
-| `SSH_HOST` | SSH-хост (алиас или user@ip)    | `tes3mp-server`           |
-| `MODS_DIR` | Путь к локальной папке с модами | `/home/user/tes3mp-mods`  |
+| Variable   | Description                    | Example                   |
+|------------|--------------------------------|---------------------------|
+| `SSH_HOST` | SSH host (alias or user@ip)    | `tes3mp-server`           |
+| `MODS_DIR` | Path to local mods directory   | `/home/user/tes3mp-mods`  |
