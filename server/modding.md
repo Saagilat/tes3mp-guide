@@ -61,38 +61,6 @@ The script will:
 1. Sync your mods to `/opt/tes3mp/mods/` on the server (removing files that no longer exist locally)
 2. Run `update_mods.sh` on the server, which copies them to `data/`, generates `requiredDataFiles.json`, packs `mods.zip`, and rebuilds the Docker container
 
----
-
-## Alternative: Manual upload
-
-If you prefer not to set up the script, or need to manage mods on a local server:
-
-### Remote server (via VPS)
-
-> ⚠️ If other people also manage the server mods, always **pull first** to avoid overwriting their work.
-
-1. Pull existing mods from the server:
-   ```bash
-   cd /path/to/mods/folder
-   rsync -avz user@server:/opt/tes3mp/mods/ ./
-   ```
-
-2. Push your mods and update the server:
-   ```bash
-   rsync -avz ./ user@server:/opt/tes3mp/mods/ && \
-     ssh user@server "cd /opt/tes3mp && bash update_mods.sh"
-   ```
-
-If you are the only person managing mods and don't need existing files — skip step 1.
-
-### Local server (same machine)
-
-```bash
-sudo cp -r . /opt/tes3mp/mods/
-cd /opt/tes3mp && sudo bash update_mods.sh
-```
-
----
 
 ## Distributing mods to players
 
