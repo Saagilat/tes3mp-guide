@@ -51,11 +51,11 @@ ln -s ~/.steam/steam/steamapps/compatdata/{WIZARD_ID}/pfx ~/.steam/steam/steamap
 > **Note about the `data/` folder:** OpenMW also looks for plugins in a `data/`
 > folder next to `openmw.cfg`, and gives it **higher priority** than `data=`
 > paths. If `openmw-cs` creates this folder, plugin versions there may differ
-> from the server and cause CRC mismatch. `tes3mp-client-update` automatically
+> from the server and cause CRC mismatch. `tes3mp-client-update-mods` automatically
 > detects this folder and offers to remove it.
 >
 > Symlinks from the prefix to external directories do **not** work in
-> Wine/Proton. Always let `tes3mp-client-update` remove the `data/` folder.
+> Wine/Proton. Always let `tes3mp-client-update-mods` remove the `data/` folder.
 
 <details>
 <summary>If you add other OpenMW utilities</summary>

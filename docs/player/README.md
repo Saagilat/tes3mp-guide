@@ -17,21 +17,21 @@ For Russian-speaking players, a separate tool installs the Russian localization 
 
 ## Updating plugins from the server
 
-To auto-install server plugins on your client, use `tes3mp-client-update`:
+To auto-install server plugins on your client, use `tes3mp-client-update-mods`:
 
 | File | Description |
 |------|-------------|
-| [`tes3mp-client-update`](../../tools/linux/tes3mp-client-update) | Download script |
-| [`tes3mp-client-update.conf`](../../tools/linux/tes3mp-client-update.conf) | Configuration template |
+| [`tes3mp-client-update-mods`](../../tools/linux/tes3mp-client-update-mods) | Download script |
+| [`tes3mp-client-update-mods.conf`](../../tools/linux/tes3mp-client-update-mods.conf) | Configuration template |
 
 ### Usage
 
 ```bash
 # Edit the config with your paths
-nano tools/linux/tes3mp-client-update.conf
+nano tools/linux/tes3mp-client-update-mods.conf
 
 # Run the update
-bash tools/linux/tes3mp-client-update
+bash tools/linux/tes3mp-client-update-mods
 ```
 
 ## UI customization

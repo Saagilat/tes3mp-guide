@@ -236,11 +236,11 @@ gather_options() {
     echo "--- Example content ---"
     echo "Test server/client scripts to verify the setup works."
     echo ""
-    read -r -p "Create example scripts? [Y/n]: " ENABLE_EXAMPLES </dev/tty
-    ENABLE_EXAMPLES="${ENABLE_EXAMPLES:-y}"
-    case "${ENABLE_EXAMPLES,,}" in
-        n|no)  ENABLE_EXAMPLES="no" ;;
-        *)     ENABLE_EXAMPLES="yes" ;;
+    read -r -p "Create example mods (scripts) to verify setup? [Y/n]: " ENABLE_EXAMPLE_MODS </dev/tty
+    ENABLE_EXAMPLE_MODS="${ENABLE_EXAMPLE_MODS:-y}"
+    case "${ENABLE_EXAMPLE_MODS,,}" in
+        n|no)  ENABLE_EXAMPLE_MODS="no" ;;
+        *)     ENABLE_EXAMPLE_MODS="yes" ;;
     esac
 }
 
@@ -471,16 +471,16 @@ setup_files() {
         ok "TES3MP server installed"
     fi
 
-    if [[ "$ENABLE_EXAMPLES" == "yes" ]]; then
+    if [[ "$ENABLE_EXAMPLE_MODS" == "yes" ]]; then
         info "Downloading example server script..."
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/example-content/server-scripts/test_server.lua" \
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/example-mods/server-scripts/test_server.lua" \
             -O "$dest/server-scripts/test_server.lua"
 
         info "Downloading example client script..."
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/example-content/client-scripts/test_client.lua" \
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/example-mods/client-scripts/test_client.lua" \
             -O "$dest/client-scripts/test_client.lua"
 
-        ok "Example scripts downloaded"
+        ok "Example mods downloaded"
     fi
 
     ok "All files installed — configs are in data/, edit them directly on the host"

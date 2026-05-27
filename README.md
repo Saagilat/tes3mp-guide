@@ -18,8 +18,8 @@ For server management see [management guide](docs/admin/management.md).
 
 ## Tools
 
-- **`tools/linux/tes3mp-server-update`** — sync plugins and server scripts from your local machine to the server
-- **`tools/linux/tes3mp-client-update`** — download and install the latest plugins from the server
+- **`tools/linux/tes3mp-server-update-mods`** — sync plugins and server scripts from your local machine to the server
+- **`tools/linux/tes3mp-client-update-mods`** — download and install the latest plugins from the server
 
 ## Repository layout
 

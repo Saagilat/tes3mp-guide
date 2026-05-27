@@ -113,16 +113,16 @@ The auto-save interval (`config.autoSaveInterval` in `config.lua`) is your safet
 Place `.esp`/`.esm`/`.omwaddon` files in `plugins/`.  
 Place Lua server scripts in `server-scripts/`.
 
-### tes3mp-server-update (from a client machine)
+### tes3mp-server-update-mods (from a client machine)
 
-If you develop plugins and scripts on another machine, use `tes3mp-server-update`:
+If you develop plugins and scripts on another machine, use `tes3mp-server-update-mods`:
 
 ```bash
 # Edit the config
-nano tools/linux/tes3mp-server-update.conf
+nano tools/linux/tes3mp-server-update-mods.conf
 
 # Sync everything to the server
-bash tools/linux/tes3mp-server-update
+bash tools/linux/tes3mp-server-update-mods
 ```
 
 ### update_mods.sh (on the server)
