@@ -9,8 +9,8 @@
 #   3. Synchronises .lua scripts from server-scripts/ to server/scripts/custom/ (removes stale scripts)
 #   4. Generates server/scripts/customScripts.lua with script names
 #   5. Synchronises .lua scripts from client-scripts/ to server/scripts/client/ (removes stale scripts)
-#   6. Generates server/scripts/clientScriptsLoader.lua as example (disabled — see notes)
-#   7. Patches server/scripts/serverCore.lua to load customScripts.lua
+#   6. Generates server/scripts/clientScriptsLoader.lua with tes3mp.LoadClientScript() calls
+#   7. Patches server/scripts/serverCore.lua to load customScripts.lua and clientScriptsLoader.lua
 #   8. Computes CRC32 for all mod files in server/data/
 #   9. Generates server/data/requiredDataFiles.json (for TES3MP) and
 #      requiredDataFiles.json (for nginx /get-required-data endpoint)
@@ -254,6 +254,15 @@ else
         echo "  Cleaned up: removed legacy dofile patch"
     fi
 
+    # Check/add require for clientScriptsLoader
+    if grep -q "require.*clientScriptsLoader" "$SERVER_CORE_LUA" 2>/dev/null; then
+        echo "  serverCore.lua already has require(\"clientScriptsLoader\") — no changes needed"
+    else
+        if [ "$client_script_copied" -gt 0 ]; then
+            # Insert after require("customScripts") line
+            sed -i '/^require("customScripts")/a require("clientScriptsLoader")' "$SERVER_CORE_LUA"
+            echo "  Added: require(\"clientScriptsLoader\") to serverCore.lua"
+        fi
     fi
 fi
 
