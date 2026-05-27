@@ -4,4 +4,4 @@
 --
 -- Удалите этот файл, если он не нужен.
 
-tes3mp.MessageBox("Client scripts are working!")
+tes3mp.MessageBox("Client scripts are working.")
