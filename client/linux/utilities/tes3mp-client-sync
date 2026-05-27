@@ -1,26 +1,23 @@
 #!/bin/bash
 #
-# tes3mp-download-mods — Download and install mods from a TES3MP server
+# tes3mp-client-sync — Download and install plugins from a TES3MP server
 #
-# This script reads the configuration from tes3mp-mods-download.conf (next to this script),
-# downloads the latest mod pack from the server, replaces old mods in Data Files,
+# This script reads the configuration from tes3mp-client-sync.conf (next to this script),
+# downloads the latest plugin pack from the server, replaces old mods in Data Files,
 # and updates openmw.cfg with the installed mods.
 #
 # Configuration:
-#   $(dirname "$0")/tes3mp-mods-download.conf
-#
-# The mod archive is downloaded from port 8085 (default HTTP endpoint port
-# for the nginx container serving the mod pack).
+#   $(dirname "$0")/tes3mp-client-sync.conf
 #
 # Usage:
-#   tes3mp-download-mods
+#   tes3mp-client-sync
 #
 # Dependencies: bash, curl, unzip
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_FILE="$SCRIPT_DIR/tes3mp-mods-download.conf"
+CONFIG_FILE="$SCRIPT_DIR/tes3mp-client-sync.conf"
 
 # Colors
 RED='\033[0;31m'
@@ -117,26 +114,26 @@ if [ -z "$SERVER_HOST" ]; then
     exit 1
 fi
 
-DOWNLOAD_URL="http://${SERVER_HOST}:${HTTP_PORT}/get-mods"
+DOWNLOAD_URL="http://${SERVER_HOST}:${HTTP_PORT}/get-plugins"
 REQ_DATA_URL="http://${SERVER_HOST}:${HTTP_PORT}/get-required-data"
 
-echo "=== TES3MP Mod Download ==="
+echo "=== TES3MP Client Sync ==="
 echo "  Server:   $SERVER_HOST:$HTTP_PORT"
 echo "  Data:     $DATA_FILES"
 echo "  openmw:   $OPENMW_CFG"
 echo ""
 
-# --- Step 1: Download mods ---
-echo "[1/4] Downloading mods from $DOWNLOAD_URL ..."
+# --- Step 1: Download plugins ---
+echo "[1/4] Downloading plugins from $DOWNLOAD_URL ..."
 
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-TMP_ZIP="$TMP_DIR/mods.zip"
+TMP_ZIP="$TMP_DIR/plugins.zip"
 
 if ! curl -fsSL --max-time 30 "$DOWNLOAD_URL" -o "$TMP_ZIP"; then
-    err "Failed to download mods from $DOWNLOAD_URL"
-    err "Make sure the server is running and the /get-mods endpoint is enabled."
+    err "Failed to download plugins from $DOWNLOAD_URL"
+    err "Make sure the server is running and the /get-plugins endpoint is enabled."
     exit 1
 fi
 
@@ -216,8 +213,10 @@ echo ""
 if curl -fsSL --max-time 10 "$REQ_DATA_URL" -o "$TMP_REQ" 2>/dev/null && [ -s "$TMP_REQ" ]; then
     echo "  Using load order from server..."
 
-    # Parse JSON via python3 and write content= entries in server-defined order
-    python3 -c "
+    # Parse JSON via rhash-based approach — simple lines
+    # Actually use python3 if available, otherwise fallback to simple parsing
+    if command -v python3 &>/dev/null; then
+        python3 -c "
 import json
 with open('$TMP_REQ') as f:
     data = json.load(f)
@@ -225,8 +224,14 @@ for entry in data:
     for name in entry:
         print(f'content={name}')
 " >> "$OPENMW_CFG"
+    else
+        # Simple fallback: extract content= lines from the json
+        grep -oP '"([^"]+\.(esp|esm|omwaddon|omwscripts|omwgame))"' "$TMP_REQ" | tr -d '"' | while read -r name; do
+            echo "content=$name" >> "$OPENMW_CFG"
+        done
+    fi
 
-    count=$(python3 -c "import json; print(len(json.load(open('$TMP_REQ'))))")
+    count=$(grep -c '^content=' "$OPENMW_CFG" 2>/dev/null || echo 0)
     ok "openmw.cfg updated with $count entries in server load order"
 else
     warn "Could not fetch requiredDataFiles.json — using files from Data Files in alphabetical order"
@@ -246,5 +251,5 @@ fi
 
 echo ""
 echo "=== Done! ==="
-echo "Mods are installed and ready."
-echo "Run tes3mp-download-mods again to update mods when the server pack changes."
+echo "Plugins are installed and ready."
+echo "Run tes3mp-client-sync again to update when the server pack changes."

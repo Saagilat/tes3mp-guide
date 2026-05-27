@@ -30,11 +30,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATA_DIR="$SCRIPT_DIR/data"
-MODS_DIR="$SCRIPT_DIR/mods"
-SCRIPTS_DIR="$SCRIPT_DIR/scripts"
+PLUGINS_DIR="$SCRIPT_DIR/plugins"
+SERVER_SCRIPTS_DIR_LOCAL="$SCRIPT_DIR/server-scripts"
 
 # TES3MP paths inside the container (data/ is mounted at /tes3mp)
-# TES3MP runs with home=./server, so it looks for mods in server/data/
+# TES3MP runs with home=./server, so it looks for plugins in server/data/
 SERVER_DATA_DIR="$DATA_DIR/server/data"
 SERVER_SCRIPTS_DIR="$DATA_DIR/server/scripts"
 
@@ -42,10 +42,10 @@ SERVER_SCRIPTS_DIR="$DATA_DIR/server/scripts"
 ORIGINAL_FILES=("Morrowind.esm" "Tribunal.esm" "Bloodmoon.esm")
 
 echo "=== TES3MP Mod & Script Updater ==="
-echo "Data directory:    $DATA_DIR"
-echo "Server data:       $SERVER_DATA_DIR"
-echo "Mods directory:    $MODS_DIR"
-echo "Scripts directory: $SCRIPTS_DIR"
+echo "Data directory:          $DATA_DIR"
+echo "Server data:             $SERVER_DATA_DIR"
+echo "Plugins directory:       $PLUGINS_DIR"
+echo "Server scripts:          $SERVER_SCRIPTS_DIR_LOCAL"
 echo ""
 
 # --- Dependency check ---
@@ -60,7 +60,7 @@ done
 mkdir -p "$SERVER_DATA_DIR"
 
 # --- Step 1: Remove mods from server/data/ (keep only originals) ---
-echo "[1/8] Removing old mods from server/data/..."
+echo "[1/8] Removing old plugins from server/data/..."
 for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"/*.esm "$SERVER_DATA_DIR"/*.ESM \
             "$SERVER_DATA_DIR"/*.omwaddon "$SERVER_DATA_DIR"/*.OMWADDON \
             "$SERVER_DATA_DIR"/*.omwscripts "$SERVER_DATA_DIR"/*.OMWSCRIPTS \
@@ -87,17 +87,17 @@ done
 
 # --- Step 2: Copy mods to server/data/ ---
 echo ""
-echo "[2/8] Copying mods from mods/ to server/data/..."
-if [ ! -d "$MODS_DIR" ]; then
-    echo "  mods/ directory does not exist. Creating..."
-    mkdir -p "$MODS_DIR"
+echo "[2/8] Copying plugins from plugins/ to server/data/..."
+if [ ! -d "$PLUGINS_DIR" ]; then
+    echo "  plugins/ directory does not exist. Creating..."
+    mkdir -p "$PLUGINS_DIR"
 fi
 
 copied=0
-for file in "$MODS_DIR"/*.esp "$MODS_DIR"/*.ESp "$MODS_DIR"/*.esm "$MODS_DIR"/*.ESM "$MODS_DIR"/*.ESP "$MODS_DIR"/*.EsM \
-            "$MODS_DIR"/*.omwaddon "$MODS_DIR"/*.OMWADDON "$MODS_DIR"/*.Omwaddon "$MODS_DIR"/*.oMwAddon \
-            "$MODS_DIR"/*.omwscripts "$MODS_DIR"/*.OMWSCRIPTS \
-            "$MODS_DIR"/*.omwgame "$MODS_DIR"/*.OMWGAME; do
+for file in "$PLUGINS_DIR"/*.esp "$PLUGINS_DIR"/*.ESp "$PLUGINS_DIR"/*.esm "$PLUGINS_DIR"/*.ESM "$PLUGINS_DIR"/*.ESP "$PLUGINS_DIR"/*.EsM \
+            "$PLUGINS_DIR"/*.omwaddon "$PLUGINS_DIR"/*.OMWADDON "$PLUGINS_DIR"/*.Omwaddon "$PLUGINS_DIR"/*.oMwAddon \
+            "$PLUGINS_DIR"/*.omwscripts "$PLUGINS_DIR"/*.OMWSCRIPTS \
+            "$PLUGINS_DIR"/*.omwgame "$PLUGINS_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
@@ -121,12 +121,12 @@ for file in "$MODS_DIR"/*.esp "$MODS_DIR"/*.ESp "$MODS_DIR"/*.esm "$MODS_DIR"/*.
 done
 
 if [ "$copied" -eq 0 ]; then
-    echo "  (no mods to copy)"
+    echo "  (no plugins to copy)"
 fi
 
 # --- Step 3: Sync scripts ---
 echo ""
-echo "[3/8] Syncing scripts to server/scripts/custom/..."
+echo "[3/8] Syncing server scripts to server/scripts/custom/..."
 CUSTOM_SCRIPTS_DIR="$SERVER_SCRIPTS_DIR/custom"
 mkdir -p "$CUSTOM_SCRIPTS_DIR"
 
@@ -134,8 +134,8 @@ mkdir -p "$CUSTOM_SCRIPTS_DIR"
 rm -f "$CUSTOM_SCRIPTS_DIR"/*.lua
 
 script_copied=0
-if [ -d "$SCRIPTS_DIR" ]; then
-    for file in "$SCRIPTS_DIR"/*.lua "$SCRIPTS_DIR"/*.LUA; do
+if [ -d "$SERVER_SCRIPTS_DIR_LOCAL" ]; then
+    for file in "$SERVER_SCRIPTS_DIR_LOCAL"/*.lua "$SERVER_SCRIPTS_DIR_LOCAL"/*.LUA; do
         [ -f "$file" ] || continue
         cp "$file" "$CUSTOM_SCRIPTS_DIR/"
         echo "  - Copied: $(basename "$file")"
@@ -262,7 +262,7 @@ echo "  Copied to $DATA_DIR/requiredDataFiles.json (for nginx)"
 
 # --- Step 7: Create mods.zip ---
 echo ""
-echo "[7/8] Creating mods.zip for distribution to players..."
+echo "[7/8] Creating plugins.zip for distribution to players..."
 
 # Collect mods from server/data/
 mods_to_zip=()
@@ -286,29 +286,29 @@ for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"
     fi
 done
 
-rm -f "$DATA_DIR/mods.zip"
+rm -f "$DATA_DIR/plugins.zip"
 if [ ${#mods_to_zip[@]} -gt 0 ]; then
-    zip -j "$DATA_DIR/mods.zip" "${mods_to_zip[@]}"
-    echo "  Created: $DATA_DIR/mods.zip (${#mods_to_zip[@]} files)"
+    zip -j "$DATA_DIR/plugins.zip" "${mods_to_zip[@]}"
+    echo "  Created: $DATA_DIR/plugins.zip (${#mods_to_zip[@]} files)"
 fi
 
 # Include requiredDataFiles.json for client to know load order
 if [ -f "$DATA_DIR/requiredDataFiles.json" ]; then
     cp "$DATA_DIR/requiredDataFiles.json" "$SCRIPT_DIR/tmp_req.json"
-    zip -j "$DATA_DIR/mods.zip" "$SCRIPT_DIR/tmp_req.json"
+    zip -j "$DATA_DIR/plugins.zip" "$SCRIPT_DIR/tmp_req.json"
     rm -f "$SCRIPT_DIR/tmp_req.json"
     echo "  Added to archive: requiredDataFiles.json"
 fi
 
-if [ ! -f "$DATA_DIR/mods.zip" ]; then
-    echo "  No mods to archive"
+if [ ! -f "$DATA_DIR/plugins.zip" ]; then
+    echo "  No plugins to archive"
 fi
 
-# --- Step 8: Create scripts.zip ---
+# --- Step 8: Create server-scripts.zip ---
 echo ""
-echo "[8/8] Creating scripts.zip for distribution..."
+echo "[8/8] Creating server-scripts.zip for distribution..."
 
-rm -f "$DATA_DIR/scripts.zip"
+rm -f "$DATA_DIR/server-scripts.zip"
 if [ "$script_copied" -gt 0 ]; then
     scripts_to_zip=()
     for file in "$CUSTOM_SCRIPTS_DIR"/*.lua; do
@@ -317,13 +317,13 @@ if [ "$script_copied" -gt 0 ]; then
     done
 
     if [ ${#scripts_to_zip[@]} -gt 0 ]; then
-        zip -j "$DATA_DIR/scripts.zip" "${scripts_to_zip[@]}"
-        echo "  Created: $DATA_DIR/scripts.zip (${#scripts_to_zip[@]} files)"
+        zip -j "$DATA_DIR/server-scripts.zip" "${scripts_to_zip[@]}"
+        echo "  Created: $DATA_DIR/server-scripts.zip (${#scripts_to_zip[@]} files)"
     fi
 fi
 
-if [ ! -f "$DATA_DIR/scripts.zip" ]; then
-    echo "  No scripts to archive"
+if [ ! -f "$DATA_DIR/server-scripts.zip" ]; then
+    echo "  No server scripts to archive"
 fi
 
 echo ""
