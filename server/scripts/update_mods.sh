@@ -22,7 +22,7 @@
 # Removing a mod/script:
 #   Delete the file from mods/ or scripts/ and run the script again
 #
-# Requirements: bash, python3, rsync, zip, docker, docker compose
+# Requirements: bash, rhash, rsync, zip, docker, docker compose
 
 set -euo pipefail
 
@@ -41,7 +41,7 @@ echo "Scripts directory: $SCRIPTS_DIR"
 echo ""
 
 # --- Dependency check ---
-for cmd in python3 rsync zip docker; do
+for cmd in rhash rsync zip docker; do
     if ! command -v "$cmd" &>/dev/null; then
         echo "Error: '$cmd' not found. Install it and try again."
         exit 1
@@ -202,58 +202,60 @@ else
     fi
 fi
 
-# --- Step 6: Compute CRC32 ---
+# --- Step 6: Generate requiredDataFiles.json ---
 echo ""
 echo "[6/8] Generating requiredDataFiles.json..."
 
-# Generate JSON via Python
-export _DATA_DIR="$DATA_DIR"
-export _ORIG_FILES="${ORIGINAL_FILES[*]}"
-python3 <<'PYEOF'
-import json, zlib, os, glob
+REQ_JSON="$DATA_DIR/requiredDataFiles.json"
 
-data_dir = os.environ['_DATA_DIR']
-original_files = os.environ['_ORIG_FILES'].split()
+# Start JSON array
+printf "[\n" > "$REQ_JSON"
 
-result = []
+# Add original master files with empty CRC (allows Steam + GOG + any edition)
+for orig in "${ORIGINAL_FILES[@]}"; do
+    printf '  {\n    "%s": []\n  },\n' "$orig" >> "$REQ_JSON"
+done
 
-# Always add original master files with empty CRC (allows Steam + GOG + any edition)
-for orig in original_files:
-    result.append({orig: []})
+# Collect and sort mod files (esp, esm, omwaddon, omwscripts, omwgame)
+mod_files=()
+for pattern in *.esp *.ESP *.esm *.ESM \
+               *.omwaddon *.OMWADDON \
+               *.omwscripts *.OMWSCRIPTS \
+               *.omwgame *.OMWGAME; do
+    for file in "$DATA_DIR"/$pattern; do
+        [ -f "$file" ] || continue
+        basename="$(basename "$file")"
 
-# Collect mod files (esp, esm, omwaddon, omwscripts, omwgame)
-files = []
-for pattern in ('*.esp', '*.ESP', '*.esm', '*.ESM',
-                '*.omwaddon', '*.OMWADDON',
-                '*.omwscripts', '*.OMWSCRIPTS',
-                '*.omwgame', '*.OMWGAME'):
-    files.extend(sorted(glob.glob(os.path.join(data_dir, pattern))))
+        # Skip originals
+        skip=0
+        for orig in "${ORIGINAL_FILES[@]}"; do
+            if [ "$basename" = "$orig" ]; then
+                skip=1
+                break
+            fi
+        done
+        [ "$skip" -eq 1 ] && continue
 
-for filepath in files:
-    basename = os.path.basename(filepath)
+        mod_files+=("$file")
+    done
+done
 
-    # Skip originals — already added above
-    if basename in original_files:
-        continue
+# Sort by filename
+IFS=$'\n' mod_files=($(sort <<<"${mod_files[*]}"))
+unset IFS
 
-    # For mods compute CRC32
-    with open(filepath, 'rb') as f:
-        data = f.read()
-    crc = zlib.crc32(data) & 0xFFFFFFFF
-    result.append({basename: [f"0x{crc:08X}"]})
+for filepath in "${mod_files[@]}"; do
+    basename="$(basename "$filepath")"
+    crc=$(rhash --crc32 --simple "$filepath" | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+    printf '  {\n    "%s": ["0x%s"]\n  },\n' "$basename" "$crc" >> "$REQ_JSON"
+done
 
-# Write output
-output_path = os.path.join(data_dir, "requiredDataFiles.json")
-with open(output_path, 'w') as f:
-    json.dump(result, f, indent=4)
-    f.write('\n')
+# Remove trailing comma from last entry and close JSON array
+sed -i '$ s/,$//' "$REQ_JSON"
+printf "]\n" >> "$REQ_JSON"
 
-print(f"  Generated file: {output_path}")
-print(f"  Records: {len(result)}")
-for entry in result:
-    for name, crcs in entry.items():
-        print(f"    - {name}: {crcs}")
-PYEOF
+echo "  Generated file: $REQ_JSON"
+echo "  Records: $(( ${#ORIGINAL_FILES[@]} + ${#mod_files[@]} ))"
 
 # --- Step 7: Create mods.zip ---
 echo ""
