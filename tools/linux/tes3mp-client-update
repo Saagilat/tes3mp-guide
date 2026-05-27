@@ -115,7 +115,6 @@ if [ -z "$SERVER_HOST" ]; then
 fi
 
 DOWNLOAD_URL="http://${SERVER_HOST}:${HTTP_PORT}/get-plugins"
-REQ_DATA_URL="http://${SERVER_HOST}:${HTTP_PORT}/get-required-data"
 
 echo "=== TES3MP Client Sync ==="
 echo "  Server:   $SERVER_HOST:$HTTP_PORT"
@@ -193,9 +192,17 @@ ok "Extracted"
 rm -f "$TMP_ZIP"
 ok "Archive deleted"
 
-# --- Step 4: Update openmw.cfg with mod load order from server ---
+# --- Step 4: Update openmw.cfg with mod load order from extracted archive ---
 echo ""
 echo "[4/4] Updating openmw.cfg with mod load order..."
+
+REQ_JSON="$DATA_FILES/requiredDataFiles.json"
+
+if [ ! -f "$REQ_JSON" ]; then
+    err "requiredDataFiles.json not found in $DATA_FILES"
+    err "The server must include it in the plugin archive."
+    exit 1
+fi
 
 if [ ! -f "$OPENMW_CFG" ]; then
     warn "openmw.cfg not found at $OPENMW_CFG — creating"
@@ -207,49 +214,31 @@ sed -i '/^content=/d' "$OPENMW_CFG"
 # Remove any blank lines at the end
 sed -i '$ { /^$/d; }' "$OPENMW_CFG"
 
-# Download requiredDataFiles.json from server for correct load order
-TMP_REQ="$TMP_DIR/requiredDataFiles.json"
-echo ""
-if curl -fsSL --max-time 10 "$REQ_DATA_URL" -o "$TMP_REQ" 2>/dev/null && [ -s "$TMP_REQ" ]; then
-    echo "  Using load order from server..."
+echo "  Using load order from $REQ_JSON..."
 
-    # Parse JSON via rhash-based approach — simple lines
-    # Actually use python3 if available, otherwise fallback to simple parsing
-    if command -v python3 &>/dev/null; then
-        python3 -c "
+if command -v python3 &>/dev/null; then
+    python3 -c "
 import json
-with open('$TMP_REQ') as f:
+with open('$REQ_JSON') as f:
     data = json.load(f)
 for entry in data:
     for name in entry:
         print(f'content={name}')
 " >> "$OPENMW_CFG"
-    else
-        # Simple fallback: extract content= lines from the json
-        grep -oP '"([^"]+\.(esp|esm|omwaddon|omwscripts|omwgame))"' "$TMP_REQ" | tr -d '"' | while read -r name; do
-            echo "content=$name" >> "$OPENMW_CFG"
-        done
-    fi
-
-    count=$(grep -c '^content=' "$OPENMW_CFG" 2>/dev/null || echo 0)
-    ok "openmw.cfg updated with $count entries in server load order"
 else
-    warn "Could not fetch requiredDataFiles.json — using files from Data Files in alphabetical order"
-    for pattern in "*.esp" "*.ESP" "*.esm" "*.ESM" \
-                   "*.omwaddon" "*.OMWADDON" \
-                   "*.omwscripts" "*.OMWSCRIPTS" \
-                   "*.omwgame" "*.OMWGAME"; do
-        for file in "$DATA_FILES"/$pattern; do
-            [ -f "$file" ] || continue
-            basename="$(basename "$file")"
-            echo "content=$basename" >> "$OPENMW_CFG"
-            echo "  - Added to openmw.cfg: $basename"
-        done
+    # Simple fallback: extract content= lines from the json
+    grep -oP '"([^"]+\.(esp|esm|omwaddon|omwscripts|omwgame))"' "$REQ_JSON" | tr -d '"' | while read -r name; do
+        echo "content=$name" >> "$OPENMW_CFG"
     done
-    ok "openmw.cfg updated with files found in Data Files"
 fi
+
+count=$(grep -c '^content=' "$OPENMW_CFG" 2>/dev/null || echo 0)
+ok "openmw.cfg updated with $count entries in server load order"
 
 echo ""
 echo "=== Done! ==="
 echo "Plugins are installed and ready."
 echo "Run tes3mp-client-update again to update when the server pack changes."
+echo ""
+echo "  If the plugin load order seems wrong, check:"
+echo "    cat $DATA_FILES/requiredDataFiles.json"
