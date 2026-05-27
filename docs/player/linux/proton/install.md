@@ -48,23 +48,14 @@ rm -rf ~/.steam/steam/steamapps/compatdata/{TES3MP_ID}/pfx
 ln -s ~/.steam/steam/steamapps/compatdata/{WIZARD_ID}/pfx ~/.steam/steam/steamapps/compatdata/{TES3MP_ID}/pfx
 ```
 
-- Create a symlink from the wizard's `pfx` to your Morrowind Data Files, so OpenMW
-  uses the same plugin files that `tes3mp-client-update` writes to:
-
-```bash
-mkdir -p "$HOME/.steam/steam/steamapps/compatdata/{WIZARD_ID}/pfx/drive_c/users/steamuser/Documents/My Games/OpenMW"
-ln -sf ~/morrowind/Data\ Files \
-  "$HOME/.steam/steam/steamapps/compatdata/{WIZARD_ID}/pfx/drive_c/users/steamuser/Documents/My Games/OpenMW/data"
-```
-
-<details>
-<summary>Why this is needed</summary>
-OpenMW checks for plugins both in `data=` paths from `openmw.cfg` and in the
-`data/` folder next to `openmw.cfg`. The `data/` folder has **higher priority**.
-If `openmw-cs` creates it later with different files, TES3MP will refuse to
-connect due to CRC mismatch. A symlink prevents this by making both locations
-point to the same directory.
-</details>
+> **Note about the `data/` folder:** OpenMW also looks for plugins in a `data/`
+> folder next to `openmw.cfg`, and gives it **higher priority** than `data=`
+> paths. If `openmw-cs` creates this folder, plugin versions there may differ
+> from the server and cause CRC mismatch. `tes3mp-client-update` automatically
+> detects this folder and offers to remove it.
+>
+> Symlinks from the prefix to external directories do **not** work in
+> Wine/Proton. Always let `tes3mp-client-update` remove the `data/` folder.
 
 <details>
 <summary>If you add other OpenMW utilities</summary>

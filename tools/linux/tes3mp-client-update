@@ -236,9 +236,36 @@ count=$(grep -c '^content=' "$OPENMW_CFG" 2>/dev/null || echo 0)
 ok "openmw.cfg updated with $count entries in server load order"
 
 echo ""
+# --- Step 5: Check for Proton compatdata data/ folder ---
+PROTON_DATA_DIR="$(dirname "$OPENMW_CFG")/data"
+if [ -d "$PROTON_DATA_DIR" ]; then
+    echo ""
+    echo "⚠️  Proton prefix data/ folder detected"
+    echo ""
+    echo "OpenMW found a 'data/' folder next to openmw.cfg:"
+    echo "  $PROTON_DATA_DIR"
+    echo ""
+    echo "This folder has higher priority than your Data Files directory."
+    echo "If plugins in this folder differ from the server, TES3MP will"
+    echo "reject the connection due to CRC mismatch."
+    echo ""
+    echo "This folder is not needed — your Data Files are already set"
+    echo "correctly in the config."
+    echo ""
+    read -r -p "Remove this folder? [y/N]: " choice
+    case "$choice" in
+        y|Y|yes|Yes)
+            rm -rf "$PROTON_DATA_DIR"
+            ok "Removed: $PROTON_DATA_DIR"
+            ;;
+        *)
+            warn "Skipped. If you encounter CRC issues, delete it manually:"
+            warn "  rm -rf \"$PROTON_DATA_DIR\""
+            ;;
+    esac
+fi
+
+echo ""
 echo "=== Done! ==="
 echo "Plugins are installed and ready."
 echo "Run tes3mp-client-update again to update when the server pack changes."
-echo ""
-echo "  If the plugin load order seems wrong, check:"
-echo "    cat $DATA_FILES/requiredDataFiles.json"
