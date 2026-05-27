@@ -71,8 +71,13 @@ install_packages() {
 # ────────────────────────────────────────────────────────────
 install_docker() {
     if command -v docker &>/dev/null; then
-        ok "Docker is already installed"
-        return 0
+        # Check if docker compose (plugin) is available
+        if docker compose version &>/dev/null; then
+            ok "Docker and docker compose are already installed"
+            return 0
+        fi
+        # docker exists but without compose plugin — try to install it
+        warn "Docker found but docker compose plugin is missing — installing..."
     fi
 
     case "$PM" in
@@ -81,13 +86,26 @@ install_docker() {
             systemctl enable --now docker
             ;;
         apt)
-            warn "Docker not found. Installing Docker via apt (docker.io, docker-compose)..."
+            warn "Installing Docker via official Docker repository..."
+            # Install prerequisites
+            DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl 2>&1
+            # Add Docker's official GPG key
+            install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+            chmod a+r /etc/apt/keyrings/docker.asc
+            # Add the repository (use Debian version codename)
+            local deb_codename
+            deb_codename=$(lsb_release -cs 2>/dev/null || grep -oP 'VERSION_CODENAME=\K.*' /etc/os-release)
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $deb_codename stable" \
+                > /etc/apt/sources.list.d/docker.list
             apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose
+            DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin 2>&1
             systemctl enable --now docker
             ;;
         dnf)
-            dnf install -y docker docker-compose
+            dnf install -y dnf-plugins-core
+            dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+            dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
             systemctl enable --now docker
             ;;
     esac
