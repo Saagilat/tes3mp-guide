@@ -8,6 +8,5 @@ sys.json
 *.tar
 *.zip
 
-# Experimental server/mods (not part of the instructions)
-example-mods/
+# Experimental server (not part of the instructions)
 example-server/
