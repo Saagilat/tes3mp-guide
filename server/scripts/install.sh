@@ -689,34 +689,20 @@ build_and_start() {
     local dest="/opt/tes3mp"
     cd "$dest"
 
-    # Ensure requiredDataFiles.json is a file, not a directory
-    # Docker changes it to a directory on restart if it doesn't exist.
-    if [[ -d "$dest/data/requiredDataFiles.json" ]]; then
-        rm -rf "$dest/data/requiredDataFiles.json"
-    fi
-    if [[ ! -f "$dest/data/requiredDataFiles.json" ]]; then
-        cat > "$dest/data/requiredDataFiles.json" << 'EOF'
-[
-  {
-    "Morrowind.esm": []
-  },
-  {
-    "Tribunal.esm": []
-  },
-  {
-    "Bloodmoon.esm": []
-  }
-]
-EOF
-    fi
-
     info "Building Docker image (this may take a minute)..."
     docker compose up -d --build 2>&1 || {
         err "Failed to start the container. Check the output above."
         exit 1
     }
 
-    ok "Server started!"
+    ok "Docker container started"
+
+    # Run update_mods.sh to sync mods/scripts and generate required files
+    info "Running update_mods.sh to initialise mods and scripts..."
+    bash "$dest/update_mods.sh" 2>&1 || {
+        warn "update_mods.sh failed — check mods/ and scripts/ directories"
+    }
+
     echo ""
     echo "=========================================="
     echo "  TES3MP server is ready!"
