@@ -3,16 +3,18 @@
 # update_mods.sh — automatic mod & script updater for TES3MP server
 #
 # What it does:
-#   1. Removes all .esp/.esm/.omwaddon/.omwscripts/.omwgame from data/ except original ones (Morrowind, Tribunal, Bloodmoon)
-#   2. Copies all .esp/.esm/.omwaddon/.omwscripts/.omwgame from mods/ to data/
-#   3. Synchronises .lua scripts from scripts/ to data/server/scripts/custom/ (removes stale scripts)
-#   4. Generates data/server/scripts/customScripts.lua with script names
-#   5. Patches data/server/scripts/serverCore.lua to load customScripts.lua
-#   6. Computes CRC32 for all mod files in data/
-#   7. Generates data/requiredDataFiles.json
-#   8. Creates mods.zip for distribution to players
-#   9. Creates scripts.zip for web endpoint
-#  10. Rebuilds and restarts the Docker container
+#   1. Removes all .esp/.esm/.omwaddon/.omwscripts/.omwgame from server/data/
+#      except original ones (Morrowind, Tribunal, Bloodmoon)
+#   2. Copies all .esp/.esm/.omwaddon/.omwscripts/.omwgame from mods/ to server/data/
+#   3. Synchronises .lua scripts from scripts/ to server/scripts/custom/ (removes stale scripts)
+#   4. Generates server/scripts/customScripts.lua with script names
+#   5. Patches server/scripts/serverCore.lua to load customScripts.lua
+#   6. Computes CRC32 for all mod files in server/data/
+#   7. Generates server/data/requiredDataFiles.json (for TES3MP) and
+#      requiredDataFiles.json (for nginx /get-required-data endpoint)
+#   8. Creates mods.zip from server/data/ at data/mods.zip for /get-mods
+#   9. Creates scripts.zip at data/scripts.zip for /get-scripts
+#  10. Restarts the Docker container
 #
 # Usage:
 #   Place .esp/.esm/.omwaddon/.omwscripts/.omwgame files in mods/
@@ -31,11 +33,17 @@ DATA_DIR="$SCRIPT_DIR/data"
 MODS_DIR="$SCRIPT_DIR/mods"
 SCRIPTS_DIR="$SCRIPT_DIR/scripts"
 
+# TES3MP paths inside the container (data/ is mounted at /tes3mp)
+# TES3MP runs with home=./server, so it looks for mods in server/data/
+SERVER_DATA_DIR="$DATA_DIR/server/data"
+SERVER_SCRIPTS_DIR="$DATA_DIR/server/scripts"
+
 # Original Morrowind files — NOT touched or deleted
 ORIGINAL_FILES=("Morrowind.esm" "Tribunal.esm" "Bloodmoon.esm")
 
 echo "=== TES3MP Mod & Script Updater ==="
 echo "Data directory:    $DATA_DIR"
+echo "Server data:       $SERVER_DATA_DIR"
 echo "Mods directory:    $MODS_DIR"
 echo "Scripts directory: $SCRIPTS_DIR"
 echo ""
@@ -48,18 +56,15 @@ for cmd in rhash rsync zip docker; do
     fi
 done
 
-# --- Check that data/ exists ---
-if [ ! -d "$DATA_DIR" ]; then
-    echo "Error: data/ directory not found in $SCRIPT_DIR"
-    exit 1
-fi
+# --- Ensure server/data/ exists ---
+mkdir -p "$SERVER_DATA_DIR"
 
-# --- Step 1: Remove mods from data/ (keep only originals) ---
-echo "[1/8] Removing old mods from data/..."
-for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM \
-            "$DATA_DIR"/*.omwaddon "$DATA_DIR"/*.OMWADDON \
-            "$DATA_DIR"/*.omwscripts "$DATA_DIR"/*.OMWSCRIPTS \
-            "$DATA_DIR"/*.omwgame "$DATA_DIR"/*.OMWGAME; do
+# --- Step 1: Remove mods from server/data/ (keep only originals) ---
+echo "[1/8] Removing old mods from server/data/..."
+for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"/*.esm "$SERVER_DATA_DIR"/*.ESM \
+            "$SERVER_DATA_DIR"/*.omwaddon "$SERVER_DATA_DIR"/*.OMWADDON \
+            "$SERVER_DATA_DIR"/*.omwscripts "$SERVER_DATA_DIR"/*.OMWSCRIPTS \
+            "$SERVER_DATA_DIR"/*.omwgame "$SERVER_DATA_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
@@ -80,9 +85,9 @@ for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.
     fi
 done
 
-# --- Step 2: Copy mods ---
+# --- Step 2: Copy mods to server/data/ ---
 echo ""
-echo "[2/8] Copying mods from mods/ to data/..."
+echo "[2/8] Copying mods from mods/ to server/data/..."
 if [ ! -d "$MODS_DIR" ]; then
     echo "  mods/ directory does not exist. Creating..."
     mkdir -p "$MODS_DIR"
@@ -110,7 +115,7 @@ for file in "$MODS_DIR"/*.esp "$MODS_DIR"/*.ESp "$MODS_DIR"/*.esm "$MODS_DIR"/*.
         continue
     fi
 
-    cp "$file" "$DATA_DIR/"
+    cp "$file" "$SERVER_DATA_DIR/"
     echo "  - Copied: $basename"
     ((copied++)) || true
 done
@@ -121,8 +126,8 @@ fi
 
 # --- Step 3: Sync scripts ---
 echo ""
-echo "[3/8] Syncing scripts to data/server/scripts/custom/..."
-CUSTOM_SCRIPTS_DIR="$DATA_DIR/server/scripts/custom"
+echo "[3/8] Syncing scripts to server/scripts/custom/..."
+CUSTOM_SCRIPTS_DIR="$SERVER_SCRIPTS_DIR/custom"
 mkdir -p "$CUSTOM_SCRIPTS_DIR"
 
 # Remove all existing custom scripts (clean sync)
@@ -146,14 +151,13 @@ fi
 echo ""
 echo "[4/8] Generating customScripts.lua..."
 
-CUSTOM_SCRIPTS_LUA="$DATA_DIR/server/scripts/customScripts.lua"
+CUSTOM_SCRIPTS_LUA="$SERVER_SCRIPTS_DIR/customScripts.lua"
 echo "return {" > "$CUSTOM_SCRIPTS_LUA"
 
 script_names=()
 for file in "$CUSTOM_SCRIPTS_DIR"/*.lua; do
     [ -f "$file" ] || continue
     basename="$(basename "$file" .lua)"
-    # Convert module name: replace / with ., remove extension
     script_names+=("$basename")
 done
 
@@ -168,7 +172,7 @@ echo "  Generated: $(basename "$CUSTOM_SCRIPTS_LUA") (${#script_names[@]} script
 echo ""
 echo "[5/8] Patching serverCore.lua to load custom scripts..."
 
-SERVER_CORE_LUA="$DATA_DIR/server/scripts/serverCore.lua"
+SERVER_CORE_LUA="$SERVER_SCRIPTS_DIR/serverCore.lua"
 
 if [ ! -f "$SERVER_CORE_LUA" ]; then
     echo "  Warning: serverCore.lua not found at $SERVER_CORE_LUA"
@@ -186,17 +190,17 @@ else
         fi
     else
         # Check if already patched
-        if grep -q "dofile(\"server/scripts/customScripts.lua\")" "$SERVER_CORE_LUA" 2>/dev/null; then
+        if grep -q "dofile(\"customScripts.lua\")" "$SERVER_CORE_LUA" 2>/dev/null; then
             echo "  serverCore.lua already patched — skipping"
         else
             # Replace customScripts = {} with dofile version
             if grep -q "customScripts\s*=" "$SERVER_CORE_LUA" 2>/dev/null; then
-                sed -i 's|customScripts\s*=\s*{.*}|customScripts = dofile("server/scripts/customScripts.lua")|' "$SERVER_CORE_LUA"
-                echo "  Patched: replaced customScripts = {...} with dofile(\"server/scripts/customScripts.lua\")"
+                sed -i 's|customScripts\s*=\s*{.*}|customScripts = dofile("customScripts.lua")|' "$SERVER_CORE_LUA"
+                echo "  Patched: replaced customScripts = {...} with dofile(\"customScripts.lua\")"
             else
                 # If no customScripts line exists, prepend it at the beginning
-                sed -i '1i customScripts = dofile("server/scripts/customScripts.lua")' "$SERVER_CORE_LUA"
-                echo "  Patched: prepended customScripts = dofile(\"server/scripts/customScripts.lua\")"
+                sed -i '1i customScripts = dofile("customScripts.lua")' "$SERVER_CORE_LUA"
+                echo "  Patched: prepended customScripts = dofile(\"customScripts.lua\")"
             fi
         fi
     fi
@@ -206,7 +210,8 @@ fi
 echo ""
 echo "[6/8] Generating requiredDataFiles.json..."
 
-REQ_JSON="$DATA_DIR/requiredDataFiles.json"
+# Generate for TES3MP (in server/data/)
+REQ_JSON="$SERVER_DATA_DIR/requiredDataFiles.json"
 
 # Start JSON array
 printf "[\n" > "$REQ_JSON"
@@ -216,13 +221,13 @@ for orig in "${ORIGINAL_FILES[@]}"; do
     printf '  {\n    "%s": []\n  },\n' "$orig" >> "$REQ_JSON"
 done
 
-# Collect and sort mod files (esp, esm, omwaddon, omwscripts, omwgame)
+# Collect and sort mod files from server/data/
 mod_files=()
 for pattern in *.esp *.ESP *.esm *.ESM \
                *.omwaddon *.OMWADDON \
                *.omwscripts *.OMWSCRIPTS \
                *.omwgame *.OMWGAME; do
-    for file in "$DATA_DIR"/$pattern; do
+    for file in "$SERVER_DATA_DIR"/$pattern; do
         [ -f "$file" ] || continue
         basename="$(basename "$file")"
 
@@ -254,19 +259,23 @@ done
 sed -i '$ s/,$//' "$REQ_JSON"
 printf "]\n" >> "$REQ_JSON"
 
-echo "  Generated file: $REQ_JSON"
+echo "  Generated: $REQ_JSON (for TES3MP)"
 echo "  Records: $(( ${#ORIGINAL_FILES[@]} + ${#mod_files[@]} ))"
+
+# Also copy to data/ root for nginx /get-required-data endpoint
+cp "$REQ_JSON" "$DATA_DIR/requiredDataFiles.json"
+echo "  Copied to $DATA_DIR/requiredDataFiles.json (for nginx)"
 
 # --- Step 7: Create mods.zip ---
 echo ""
 echo "[7/8] Creating mods.zip for distribution to players..."
 
-# Collect mods (all .esp/.esm/.omwaddon/.omwscripts/.omwgame except originals)
+# Collect mods from server/data/
 mods_to_zip=()
-for file in "$DATA_DIR"/*.esp "$DATA_DIR"/*.ESP "$DATA_DIR"/*.esm "$DATA_DIR"/*.ESM \
-            "$DATA_DIR"/*.omwaddon "$DATA_DIR"/*.OMWADDON \
-            "$DATA_DIR"/*.omwscripts "$DATA_DIR"/*.OMWSCRIPTS \
-            "$DATA_DIR"/*.omwgame "$DATA_DIR"/*.OMWGAME; do
+for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"/*.esm "$SERVER_DATA_DIR"/*.ESM \
+            "$SERVER_DATA_DIR"/*.omwaddon "$SERVER_DATA_DIR"/*.OMWADDON \
+            "$SERVER_DATA_DIR"/*.omwscripts "$SERVER_DATA_DIR"/*.OMWSCRIPTS \
+            "$SERVER_DATA_DIR"/*.omwgame "$SERVER_DATA_DIR"/*.OMWGAME; do
     [ -f "$file" ] || continue
     basename="$(basename "$file")"
 
@@ -286,7 +295,7 @@ done
 rm -f "$DATA_DIR/mods.zip"
 if [ ${#mods_to_zip[@]} -gt 0 ]; then
     zip -j "$DATA_DIR/mods.zip" "${mods_to_zip[@]}"
-    echo "  Added mods: ${#mods_to_zip[@]} files"
+    echo "  Created: $DATA_DIR/mods.zip (${#mods_to_zip[@]} files)"
 fi
 
 # Include requiredDataFiles.json for client to know load order
@@ -294,7 +303,7 @@ if [ -f "$DATA_DIR/requiredDataFiles.json" ]; then
     cp "$DATA_DIR/requiredDataFiles.json" "$SCRIPT_DIR/tmp_req.json"
     zip -j "$DATA_DIR/mods.zip" "$SCRIPT_DIR/tmp_req.json"
     rm -f "$SCRIPT_DIR/tmp_req.json"
-    echo "  Added: requiredDataFiles.json"
+    echo "  Added to archive: requiredDataFiles.json"
 fi
 
 if [ ! -f "$DATA_DIR/mods.zip" ]; then
@@ -315,7 +324,7 @@ if [ "$script_copied" -gt 0 ]; then
 
     if [ ${#scripts_to_zip[@]} -gt 0 ]; then
         zip -j "$DATA_DIR/scripts.zip" "${scripts_to_zip[@]}"
-        echo "  Added scripts: ${#scripts_to_zip[@]} files"
+        echo "  Created: $DATA_DIR/scripts.zip (${#scripts_to_zip[@]} files)"
     fi
 fi
 

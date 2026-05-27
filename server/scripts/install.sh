@@ -428,6 +428,7 @@ gather_lua_options() {
 setup_files() {
     local dest="/opt/tes3mp"
     mkdir -p "$dest/data" "$dest/data/players" "$dest/data/cells" \
+             "$dest/data/server/data" \
              "$dest/mods" "$dest/scripts"
     chown -R root:root "$dest"
 
