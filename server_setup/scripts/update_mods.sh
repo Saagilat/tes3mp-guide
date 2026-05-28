@@ -10,13 +10,12 @@
 #   4. Generates server/scripts/customScripts.lua with script names
 #   5. Computes CRC32 for all mod files in server/data/
 #   6. Generates server/data/requiredDataFiles.json (for TES3MP)
-#   7. Creates mods.zip at data/mods.zip with: plugins + client-scripts + requiredDataFiles.json for /get-mods
+#   7. Creates mods.zip at data/mods.zip with: plugins + requiredDataFiles.json for /get-mods
 #   8. Restarts the Docker container
 #
 # Usage:
 #   Place .esp/.esm/.omwaddon/.omwscripts/.omwgame files in plugins/
 #   Place .lua files in server-scripts/ (server scripts)
-#   Place .lua files in client-scripts/ (client scripts, included in mods.zip)
 #   Run: bash update_mods.sh
 #
 # Removing a mod/script:
@@ -30,7 +29,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATA_DIR="$SCRIPT_DIR/data"
 PLUGINS_DIR="$SCRIPT_DIR/plugins"
 SERVER_SCRIPTS_DIR_LOCAL="$SCRIPT_DIR/server-scripts"
-CLIENT_SCRIPTS_DIR_LOCAL="$SCRIPT_DIR/client-scripts"
 
 # TES3MP paths inside the container (data/ is mounted at /tes3mp)
 # TES3MP runs with home=./server, so it looks for plugins in server/data/
@@ -45,7 +43,7 @@ echo "Data directory:          $DATA_DIR"
 echo "Server data:             $SERVER_DATA_DIR"
 echo "Plugins directory:       $PLUGINS_DIR"
 echo "Server scripts:          $SERVER_SCRIPTS_DIR_LOCAL"
-echo "Client scripts:          $CLIENT_SCRIPTS_DIR_LOCAL"
+echo "Client scripts:          $SCRIPT_DIR/client-scripts"
 echo ""
 
 # --- Dependency check ---
@@ -272,15 +270,6 @@ for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"
     fi
 done
 
-# Collect client scripts
-client_files=()
-if [ -d "$CLIENT_SCRIPTS_DIR_LOCAL" ]; then
-    for file in "$CLIENT_SCRIPTS_DIR_LOCAL"/*.lua "$CLIENT_SCRIPTS_DIR_LOCAL"/*.LUA; do
-        [ -f "$file" ] || continue
-        client_files+=("$file")
-    done
-fi
-
 rm -f "$DATA_DIR/mods.zip"
 
 # Create a staging directory for the archive
@@ -289,11 +278,6 @@ trap 'rm -rf "$STAGE_DIR"' EXIT
 
 # Copy plugins to staging
 for f in "${mods_to_zip[@]}"; do
-    cp "$f" "$STAGE_DIR/"
-done
-
-# Copy client scripts to staging
-for f in "${client_files[@]}"; do
     cp "$f" "$STAGE_DIR/"
 done
 
@@ -309,14 +293,13 @@ if [ ${#staging_files[@]} -gt 0 ] && [ "$(ls -A "$STAGE_DIR")" ]; then
     zip -q "$DATA_DIR/mods.zip" -- *
     cd "$SCRIPT_DIR"
     echo "  Created: $DATA_DIR/mods.zip"
-    echo "  Contents: ${#mods_to_zip[@]} plugins, ${#client_files[@]} client scripts, 1 requiredDataFiles.json"
+    echo "  Contents: ${#mods_to_zip[@]} plugins, 1 requiredDataFiles.json"
 fi
 
 if [ ! -f "$DATA_DIR/mods.zip" ]; then
     echo "  No mod files to archive"
 fi
 
-# --- Step 8: Check serverCore.lua for clientScriptsLoader (cleanup) was done in step 6 ---
 # Remove old artifacts (cleanup from previous versions)
 rm -f "$DATA_DIR/plugins.zip"
 rm -f "$DATA_DIR/server-scripts.zip"

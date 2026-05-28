@@ -441,7 +441,7 @@ setup_files() {
     local dest="/opt/tes3mp"
     mkdir -p "$dest/data" "$dest/data/players" "$dest/data/cells" \
              "$dest/data/server/data" \
-             "$dest/plugins" "$dest/server-scripts" "$dest/client-scripts"
+             "$dest/plugins" "$dest/server-scripts"
     chown -R root:root "$dest"
 
     cd "$dest"
@@ -475,10 +475,6 @@ setup_files() {
         info "Downloading example server script..."
         wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/modding-test/server-scripts/test_server.lua" \
             -O "$dest/server-scripts/test_server.lua"
-
-        info "Downloading example client script..."
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/modding-test/client-scripts/test_client.lua" \
-            -O "$dest/client-scripts/test_client.lua"
 
         info "Downloading example plugin..."
         wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/modding-test/plugins/test_plugin.omwaddon" \
@@ -789,7 +785,6 @@ build_and_start() {
     echo ""
     echo "  To sync plugins and scripts: bash $dest/update_mods.sh"
     echo "  Place server scripts in: server-scripts/"
-    echo "  Place client scripts in: client-scripts/"
     echo ""
 }
 
