@@ -19,14 +19,25 @@ cd tes3mp-easy
 
 ## 3. Configure fonts
 
-Create `settings.cfg` inside your OpenMW profile folder and copy the example file:
+OpenMW uses bitmap fonts by default, which look blurry on modern screens. For better readability, install TrueType fonts:
+
+1. Download **TrueType fonts for OpenMW** from Nexus Mods:  
+   https://www.nexusmods.com/morrowind/mods/46854  
+2. Extract the archive contents into your `openmw-profile` folder
+
+Copy the example file from the repository:
 
 ```bash
 cp tools/example-settings.cfg /path/to/openmw-profile/settings.cfg
 ```
 
-> The location of the OpenMW profile depends on your OS.
-> Linux (Proton): the folder is created at `~/openmw-profile` (see step 2).
+<details>
+<summary>Parameter explanations</summary>
+
+- `ttf resolution` — font resolution (higher = sharper)
+- `font size` — range is limited to 12–20  
+- `scaling factor` — determines the overall UI size
+</details>
 
 For more font options see the [OpenMW font documentation](https://openmw.readthedocs.io/en/openmw-0.47.0_a/reference/modding/font.html).
 
