@@ -4,6 +4,6 @@
 
 | Platform | Instructions |
 |----------|-------------|
-| Linux | [Установка локализации](../../../tools/linux/localization/russian/README.md) |
+| Linux | [Установка локализации](../../../../tools/linux/localization/russian/README.md) |
 
 > Другие платформы будут добавлены позже.
