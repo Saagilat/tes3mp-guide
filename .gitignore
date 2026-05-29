@@ -11,3 +11,6 @@ test-server/
 
 # Experimental server (not part of the instructions)
 example-server/
+
+# Local backup of GitHub Release assets (russifier, voices, etc.)
+releases/

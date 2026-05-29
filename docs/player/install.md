@@ -3,8 +3,8 @@
 ## 1. Clone the repository
 
 ```bash
-git clone git@github.com:Saagilat/tes3mp-easy-setup.git
-cd tes3mp-easy-setup
+git clone git@github.com:Saagilat/tes3mp-easy.git
+cd tes3mp-easy
 ```
 
 ---

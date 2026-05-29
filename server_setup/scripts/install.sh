@@ -3,10 +3,10 @@
 # install.sh — Interactive TES3MP Docker server installer
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/scripts/install.sh | bash
 #
 # Or download and run:
-#   wget https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/scripts/install.sh
+#   wget https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/scripts/install.sh
 #   bash install.sh
 #
 
@@ -446,17 +446,17 @@ setup_files() {
 
     cd "$dest"
 
-    info "Downloading Dockerfile and configs from Saagilat/tes3mp-easy-setup..."
+    info "Downloading Dockerfile and configs from Saagilat/tes3mp-easy..."
     for f in tes3mp.dockerfile docker-compose.yml nginx.conf export.dockerfile export_server.sh; do
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/docker/$f" -O "$dest/$f"
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/docker/$f" -O "$dest/$f"
     done
     for f in update_mods.sh; do
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/scripts/$f" -O "$dest/$f"
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/scripts/$f" -O "$dest/$f"
     done
     chmod +x "$dest/update_mods.sh"
 
     # Download management reference
-    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/docs/admin/management.md" -O "$dest/management.md"
+    wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/docs/admin/management.md" -O "$dest/management.md"
 
     # Download TES3MP server binary
     local TES3MP_URL="https://github.com/TES3MP/TES3MP/releases/download/tes3mp-0.8.1/tes3mp-server-GNU+Linux-x86_64-release-0.8.1-68954091c5-6da3fdea59.tar.gz"
@@ -473,11 +473,11 @@ setup_files() {
 
     if [[ "$ENABLE_EXAMPLE_MODS" == "yes" ]]; then
         info "Downloading example server script..."
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/modding-test/server-scripts/test_server.lua" \
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/modding-test/server-scripts/test_server.lua" \
             -O "$dest/server-scripts/test_server.lua"
 
         info "Downloading example plugin..."
-        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/modding-test/plugins/test_plugin.omwaddon" \
+        wget -q --show-progress "https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/modding-test/plugins/test_plugin.omwaddon" \
             -O "$dest/plugins/test_plugin.omwaddon"
 
         ok "Example mods downloaded"

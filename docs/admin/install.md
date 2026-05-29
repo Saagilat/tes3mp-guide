@@ -3,8 +3,8 @@
 ## 1. Clone the repository
 
 ```bash
-git clone git@github.com:Saagilat/tes3mp-easy-setup.git
-cd tes3mp-easy-setup
+git clone git@github.com:Saagilat/tes3mp-easy.git
+cd tes3mp-easy
 ```
 
 ---
@@ -14,7 +14,7 @@ cd tes3mp-easy-setup
 Run the install script on your server (VPS):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Saagilat/tes3mp-easy-setup/master/server_setup/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Saagilat/tes3mp-easy/master/server_setup/scripts/install.sh | bash
 ```
 
 The script installs Docker, downloads the TES3MP server, configures settings, and starts the container.
@@ -45,7 +45,7 @@ Now `ssh my-server` should connect without a password.
 Add a bash alias to `~/.bashrc` or `~/.bash_aliases`:
 
 ```bash
-alias tes3mp-easy-server-update-mods='bash ~/tes3mp-easy-setup/tools/linux/tes3mp-easy-server-update-mods'
+alias tes3mp-easy-server-update-mods='bash ~/tes3mp-easy/tools/linux/tes3mp-easy-server-update-mods'
 ```
 
 Apply the changes:

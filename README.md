@@ -1,4 +1,4 @@
-# TES3MP Easy Setup
+# TES3MP Easy
 
 Guides and scripts for setting up and managing TES3MP servers and installing the TES3MP client.
 

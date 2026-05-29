@@ -33,7 +33,7 @@ RUSSIFIER_TAR="$SCRIPT_DIR/russifier.tar"
 if [ ! -f "$RUSSIFIER_TAR" ]; then
     echo "Error: file '$RUSSIFIER_TAR' not found."
     echo "Download russifier.tar from GitHub Releases and place it next to the script:"
-    echo "  https://github.com/Saagilat/tes3mp-easy-setup/releases"
+    echo "  https://github.com/Saagilat/tes3mp-easy/releases"
     exit 1
 fi
 echo "Extracting localization files (Data Files only)..."
