@@ -58,11 +58,10 @@ destinationPort = 25565
 
 ## 6. Install the mod update tool
 
-Copy and edit the config:
+Edit the config:
 
 ```bash
-cp tools/linux/tes3mp-easy-client-update-mods.conf tools/linux/tes3mp-easy-client-update-mods.conf.local
-nano tools/linux/tes3mp-easy-client-update-mods.conf.local
+nano tools/linux/tes3mp-easy-client-update-mods.conf
 ```
 
 Set the paths to your files:
