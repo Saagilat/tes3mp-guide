@@ -66,16 +66,7 @@ For `openmw-cs.exe` and other OpenMW utilities repeat step 3:
 - Symlink to the wizard's `pfx`
 </details>
 
-## 4. Configure connection to the server
-
-TES3MP reads settings from `tes3mp-client-default.cfg`, which is located next to `tes3mp.exe`.
-
-- Edit `tes3mp-client-default.cfg`: `~/games/tes3mp/tes3mp-client-default.cfg`
-- Set the server address and port (default is 25565)
-
-The server address is referred to as `{SERVER_ADDRESS}`.
-
-## 5. Limit FPS
+## 4. Limit FPS
 
 <details>
 <summary>Why is this needed?</summary>
@@ -94,9 +85,6 @@ paru -S mangohud
 MANGOHUD_CONFIG=fps_limit=120,no_display mangohud %command%
 ```
 
-## 6. Launch `tes3mp.exe` through Steam
-
-Everything should work.
-
 ---
 
+After Proton setup is complete, continue with the [general player guide](../install.md) for font configuration, server address setup, mods, and joining the server.
