@@ -87,4 +87,4 @@ MANGOHUD_CONFIG=fps_limit=120,no_display mangohud %command%
 
 ---
 
-After Proton setup is complete, continue with the [general player guide](../install.md) for font configuration, server address setup, mods, and joining the server.
+After Proton setup is complete, continue with the [general player guide](../../install.md) for font configuration, server address setup, mods, and joining the server.
