@@ -145,7 +145,7 @@ package_mods_and_scripts() {
 
     local stage_dir
     stage_dir=$(mktemp -d)
-    trap 'rm -rf "$stage_dir"' RETURN
+    trap 'rm -rf "${stage_dir:-}"' RETURN
 
     local plugins_stage="$stage_dir/plugins"
     local scripts_stage="$stage_dir/scripts"
@@ -227,7 +227,7 @@ package_world() {
 
     local stage_dir
     stage_dir=$(mktemp -d)
-    trap 'rm -rf "$stage_dir"' RETURN
+    trap 'rm -rf "${stage_dir:-}"' RETURN
 
     # Copy players to staging/player/
     if [ -d "$PLAYER_DIR" ] && [ -n "$(ls -A "$PLAYER_DIR" 2>/dev/null)" ]; then
