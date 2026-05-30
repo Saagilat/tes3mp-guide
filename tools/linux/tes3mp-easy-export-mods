@@ -150,41 +150,51 @@ ok "Found requiredDataFiles.json"
 echo ""
 echo "[2/5] Validating plugin CRC32 against requiredDataFiles.json..."
 
+ORIGINAL_FILES=("Morrowind.esm" "Tribunal.esm" "Bloodmoon.esm")
+
 VALIDATION_FAILED=0
 
-if command -v python3 &>/dev/null; then
-    python3 -c "
-import json, sys, os, subprocess
+while IFS= read -r line; do
+    # Match lines like: "filename.ext": [] or "filename.ext": ["0xCRC32"]
+    if [[ "$line" =~ ^[[:space:]]*\"([^\"]+)\":[[:space:]]*\[(.*)\] ]]; then
+        filename="${BASH_REMATCH[1]}"
+        crc_content="${BASH_REMATCH[2]}"
 
-with open('$REQ_JSON') as f:
-    data = json.load(f)
+        # Skip original files (Morrowind.esm, Tribunal.esm, Bloodmoon.esm)
+        skip=0
+        for orig in "${ORIGINAL_FILES[@]}"; do
+            if [[ "${filename,,}" == "${orig,,}" ]]; then
+                skip=1
+                break
+            fi
+        done
+        [[ "$skip" -eq 1 ]] && continue
 
-for entry in data:
-    for name, crc_list in entry.items():
-        filepath = os.path.join('$CFG_PLUGINS_DIR', name)
-        if not os.path.exists(filepath):
-            print(f'ERROR: Plugin \"{name}\" not found at {filepath}')
-            sys.exit(1)
-        if crc_list:
-            expected_crc = crc_list[0].upper()
-            try:
-                result = subprocess.run(
-                    ['rhash', '--crc32', '--simple', filepath],
-                    capture_output=True, text=True, check=True
-                )
-                actual_crc = result.stdout.split()[0].upper()
-                expected_clean = expected_crc.replace('0X', '')
-                if actual_crc != expected_clean:
-                    print(f'ERROR: CRC32 mismatch for \"{name}\": expected {expected_crc}, got 0x{actual_crc}')
-                    sys.exit(1)
-            except subprocess.CalledProcessError:
-                print(f'ERROR: Failed to compute CRC32 for \"{name}\"')
-                sys.exit(1)
-print('All plugins validated successfully')
-" || VALIDATION_FAILED=1
-else
-    warn "python3 not found — skipping CRC32 validation"
-fi
+        filepath="$CFG_PLUGINS_DIR/$filename"
+
+        # Check file exists
+        if [ ! -f "$filepath" ]; then
+            err "Plugin \"$filename\" not found at $filepath"
+            VALIDATION_FAILED=1
+            continue
+        fi
+
+        # Extract expected CRC from crc_content (e.g. "0xABCD1234")
+        expected_crc=""
+        if [[ "$crc_content" =~ '"0x([0-9A-Fa-f]+)"' ]]; then
+            expected_crc="${BASH_REMATCH[1]}"
+        fi
+
+        if [[ -n "$expected_crc" ]]; then
+            actual_crc=$(rhash --crc32 --simple "$filepath" 2>/dev/null | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+            expected_crc_upper="${expected_crc^^}"
+            if [[ "$actual_crc" != "$expected_crc_upper" ]]; then
+                err "CRC32 mismatch for \"$filename\": expected 0x$expected_crc_upper, got 0x$actual_crc"
+                VALIDATION_FAILED=1
+            fi
+        fi
+    fi
+done < "$REQ_JSON"
 
 if [ "$VALIDATION_FAILED" -ne 0 ]; then
     err "Validation failed — aborting"
