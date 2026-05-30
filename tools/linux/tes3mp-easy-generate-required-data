@@ -133,7 +133,7 @@ for pattern in *.esp *.ESP *.esm *.ESM \
         basename="$(basename "$file")"
 
         # Skip original files
-        local skip=0
+        skip=0
         for orig in "${ORIGINAL_FILES[@]}"; do
             if [ "${basename,,}" = "${orig,,}" ]; then
                 skip=1
