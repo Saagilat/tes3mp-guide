@@ -7,7 +7,7 @@
 #                    combined, for full world state recovery
 #
 # Archive structure (players + cells preserved separately):
-#   world_backup.tar.gz
+#   world_state.tar.gz
 #   ├── player/
 #   │   ├── AccountName1.json
 #   │   └── AccountName2.json
@@ -35,6 +35,12 @@ CACHE_DIR="${CACHE_DIR:-/tmp/export_cache}"
 CACHE_MINUTES="${CACHE_MINUTES:-10}"
 PORT="${PORT:-5000}"
 CACHE_TTL=$((CACHE_MINUTES * 60))
+
+# Set up variables for package.sh (we only need package_world)
+export PLAYER_DIR="$CHARACTERS_DIR"
+export CELL_DIR="$CELLS_DIR"
+
+source /app/package.sh
 
 mkdir -p "$CACHE_DIR"
 
@@ -82,24 +88,8 @@ serve_combined_archive() {
     fi
 
     if [ "$rebuild" -eq 1 ]; then
-        local stage_dir
-        stage_dir=$(mktemp -d)
-
-        # Copy players to staging/player/
-        if [ -d "$CHARACTERS_DIR" ] && [ -n "$(ls -A "$CHARACTERS_DIR" 2>/dev/null)" ]; then
-            mkdir -p "$stage_dir/player"
-            cp -r "$CHARACTERS_DIR"/* "$stage_dir/player/"
-        fi
-
-        # Copy cells to staging/cell/
-        if [ -d "$CELLS_DIR" ] && [ -n "$(ls -A "$CELLS_DIR" 2>/dev/null)" ]; then
-            mkdir -p "$stage_dir/cell"
-            cp -r "$CELLS_DIR"/* "$stage_dir/cell/"
-        fi
-
-        # Create the archive preserving player/ and cell/ prefixes
-        tar czf "$archive_path" -C "$stage_dir" . 2>/dev/null
-        rm -rf "$stage_dir"
+        # Use the shared packaging library
+        package_world "$archive_path" 2>/dev/null
     fi
 
     if [ ! -f "$archive_path" ]; then

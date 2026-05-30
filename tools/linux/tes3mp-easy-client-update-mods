@@ -12,7 +12,7 @@
 # Usage:
 #   tes3mp-client-update-mods
 #
-# Dependencies: bash, curl, unzip
+# Dependencies: bash, curl, tar
 
 set -euo pipefail
 
@@ -81,7 +81,7 @@ fi
 HTTP_PORT=8085
 
 # --- Check dependencies ---
-for cmd in curl unzip; do
+for cmd in curl tar; do
     if ! command -v "$cmd" &>/dev/null; then
         err "'$cmd' not found. Install it and try again."
         exit 1
@@ -128,20 +128,20 @@ echo "[1/4] Downloading mods from $DOWNLOAD_URL ..."
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-TMP_ZIP="$TMP_DIR/mods.zip"
+TMP_TGZ="$TMP_DIR/mods.tar.gz"
 
-if ! curl -fsSL --max-time 30 "$DOWNLOAD_URL" -o "$TMP_ZIP"; then
+if ! curl -fsSL --max-time 30 "$DOWNLOAD_URL" -o "$TMP_TGZ"; then
     err "Failed to download plugins from $DOWNLOAD_URL"
     err "Make sure the server is running and the /get-mods endpoint is enabled."
     exit 1
 fi
 
-if [ ! -f "$TMP_ZIP" ] || [ ! -s "$TMP_ZIP" ]; then
+if [ ! -f "$TMP_TGZ" ] || [ ! -s "$TMP_TGZ" ]; then
     err "Downloaded file is empty"
     exit 1
 fi
 
-ok "Downloaded ($(du -h "$TMP_ZIP" | cut -f1))"
+ok "Downloaded ($(du -h "$TMP_TGZ" | cut -f1))"
 
 # --- Step 2: Remove old mods ---
 echo ""
@@ -180,16 +180,22 @@ if [ "$removed" -eq 0 ]; then
     echo "  (no mods to remove)"
 fi
 
-# --- Step 3: Extract new mods ---
+# --- Step 3: Extract new mods (only plugins/ subdirectory) ---
 echo ""
 echo "[3/4] Extracting new mods to Data Files..."
 
-unzip -o -q "$TMP_ZIP" -d "$DATA_FILES"
+# Extract the entire archive to a staging directory, then copy only plugins/
+tar xzf "$TMP_TGZ" -C "$TMP_DIR"
 
-ok "Extracted"
+if [ -d "$TMP_DIR/plugins" ] && [ -n "$(ls -A "$TMP_DIR/plugins" 2>/dev/null)" ]; then
+    cp -r "$TMP_DIR/plugins"/* "$DATA_FILES/"
+    ok "Extracted plugins from archive"
+else
+    warn "No plugins/ directory found in archive — nothing to extract"
+fi
 
 # Remove the downloaded archive
-rm -f "$TMP_ZIP"
+rm -f "$TMP_TGZ"
 ok "Archive deleted"
 
 # --- Step 4: Update openmw.cfg with mod load order from extracted archive ---

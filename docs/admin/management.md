@@ -22,8 +22,7 @@ All endpoints are disabled by default.
 
 | Endpoint | Description | Backend |
 |----------|-------------|---------|
-| `/get-mods` | Download all server mods (`mods.zip`) | nginx (static file) |
-| `/get-server-scripts` | Download all custom Lua scripts (`server-scripts.zip`) | nginx (static file) |
+| `/get-mods` | Download all server mods + scripts (`mods.tar.gz`) | nginx (static file) |
 | `/get-world` | Download players + cells for world recovery (combined tar.gz) | export service |
 
 To enable endpoints:
@@ -39,7 +38,6 @@ To enable endpoints:
 
 When enabled, endpoints are available at:
 - `http://<server-ip>:8085/get-mods`
-- `http://<server-ip>:8085/get-server-scripts`
 - `http://<server-ip>:8085/get-world`
 
 ## Player role management

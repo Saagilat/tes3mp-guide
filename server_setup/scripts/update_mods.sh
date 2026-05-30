@@ -3,15 +3,17 @@
 # update_mods.sh — automatic mod & script updater for TES3MP server
 #
 # What it does:
-#   1. Removes all .esp/.esm/.omwaddon/.omwscripts/.omwgame from server/data/
+#   1. Creates backups of mods+scripts and world before making any changes
+#   2. Removes all .esp/.esm/.omwaddon/.omwscripts/.omwgame from server/data/
 #      except original ones (Morrowind, Tribunal, Bloodmoon)
-#   2. Copies all .esp/.esm/.omwaddon/.omwscripts/.omwgame from plugins/ to server/data/
-#   3. Synchronises .lua scripts from server-scripts/ to server/scripts/custom/ (removes stale scripts)
-#   4. Generates server/scripts/customScripts.lua with script names
-#   5. Computes CRC32 for all mod files in server/data/
-#   6. Generates server/data/requiredDataFiles.json (for TES3MP)
-#   7. Creates mods.zip at data/mods.zip with: plugins + requiredDataFiles.json for /get-mods
-#   8. Restarts the Docker container
+#   3. Copies all .esp/.esm/.omwaddon/.omwscripts/.omwgame from plugins/ to server/data/
+#   4. Synchronises .lua scripts from server-scripts/ to server/scripts/custom/ (removes stale scripts)
+#   5. Generates server/scripts/customScripts.lua with script names
+#   6. Computes CRC32 for all mod files in server/data/
+#   7. Generates server/data/requiredDataFiles.json (for TES3MP)
+#   8. Creates mods.tar.gz at container-data/mods.tar.gz with:
+#      plugins/ + scripts/ + requiredDataFiles.json (for /get-mods endpoint)
+#   9. Restarts the Docker container
 #
 # Usage:
 #   Place .esp/.esm/.omwaddon/.omwscripts/.omwgame files in plugins/
@@ -21,7 +23,7 @@
 # Removing a mod/script:
 #   Delete the file from plugins/ or scripts/ and run the script again
 #
-# Requirements: bash, rhash, rsync, zip, docker, docker compose
+# Requirements: bash, rhash, rsync, tar, docker, docker compose
 
 set -euo pipefail
 
@@ -38,27 +40,56 @@ SERVER_SCRIPTS_DIR="$DATA_DIR/server/scripts"
 # Original Morrowind files — NOT touched or deleted
 ORIGINAL_FILES=("Morrowind.esm" "Tribunal.esm" "Bloodmoon.esm")
 
+# Backup directory
+BACKUPS_DIR="$DATA_DIR/backups"
+
+# --- Source the shared packaging library ---
+# Sets up: check_disk_space(), package_mods_and_scripts(), package_world()
+export PLUGINS_DIR
+export SERVER_SCRIPTS_DIR="$SERVER_SCRIPTS_DIR_LOCAL"
+export PLAYER_DIR="$SERVER_DATA_DIR/player"
+export CELL_DIR="$SERVER_DATA_DIR/cell"
+export ORIGINAL_FILES
+
+source "$SCRIPT_DIR/package.sh"
+
 echo "=== TES3MP Mod & Script Updater ==="
 echo "Data directory:          $DATA_DIR"
 echo "Server data:             $SERVER_DATA_DIR"
 echo "Plugins directory:       $PLUGINS_DIR"
 echo "Server scripts:          $SERVER_SCRIPTS_DIR_LOCAL"
-echo "Client scripts (not supported in TES3MP 0.8.1): $SCRIPT_DIR/client-scripts"
+echo "Backups directory:       $BACKUPS_DIR"
 echo ""
 
 # --- Dependency check ---
-for cmd in rhash rsync zip docker; do
+for cmd in rhash rsync tar docker; do
     if ! command -v "$cmd" &>/dev/null; then
         echo "Error: '$cmd' not found. Install it and try again."
         exit 1
     fi
 done
 
-# --- Ensure server/data/ exists ---
-mkdir -p "$SERVER_DATA_DIR"
+# --- Ensure required directories exist ---
+mkdir -p "$SERVER_DATA_DIR" "$BACKUPS_DIR"
 
-# --- Step 1: Remove mods from server/data/ (keep only originals) ---
-echo "[1/8] Removing old plugins from server/data/..."
+TIMESTAMP=$(date +%F_%H-%M-%S)
+
+# --- Step 0a: Check disk space for backup ---
+echo "[0/9] Checking disk space for backup..."
+check_disk_space "$BACKUPS_DIR"
+
+# --- Step 0b: Backup mods, scripts, and world ---
+echo ""
+echo "[1/9] Backing up current mods, scripts, and world..."
+
+package_mods_and_scripts "$BACKUPS_DIR/mods_scripts_${TIMESTAMP}.tar.gz"
+package_world "$BACKUPS_DIR/world_${TIMESTAMP}.tar.gz"
+
+echo "  Backups saved to: $BACKUPS_DIR"
+
+# --- Step 1: Remove old plugins from server/data/ (keep only originals) ---
+echo ""
+echo "[2/9] Removing old plugins from server/data/..."
 for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"/*.esm "$SERVER_DATA_DIR"/*.ESM \
             "$SERVER_DATA_DIR"/*.omwaddon "$SERVER_DATA_DIR"/*.OMWADDON \
             "$SERVER_DATA_DIR"/*.omwscripts "$SERVER_DATA_DIR"/*.OMWSCRIPTS \
@@ -85,7 +116,7 @@ done
 
 # --- Step 2: Copy mods to server/data/ ---
 echo ""
-echo "[2/8] Copying plugins from plugins/ to server/data/..."
+echo "[3/9] Copying plugins from plugins/ to server/data/..."
 if [ ! -d "$PLUGINS_DIR" ]; then
     echo "  plugins/ directory does not exist. Creating..."
     mkdir -p "$PLUGINS_DIR"
@@ -124,7 +155,7 @@ fi
 
 # --- Step 3: Sync server scripts ---
 echo ""
-echo "[3/8] Syncing server scripts to server/scripts/custom/..."
+echo "[4/9] Syncing server scripts to server/scripts/custom/..."
 CUSTOM_SCRIPTS_DIR="$SERVER_SCRIPTS_DIR/custom"
 mkdir -p "$CUSTOM_SCRIPTS_DIR"
 
@@ -147,7 +178,7 @@ fi
 
 # --- Step 4: Generate customScripts.lua ---
 echo ""
-echo "[4/8] Generating customScripts.lua..."
+echo "[5/9] Generating customScripts.lua..."
 
 CUSTOM_SCRIPTS_LUA="$SERVER_SCRIPTS_DIR/customScripts.lua"
 
@@ -165,7 +196,7 @@ echo "  Generated: $(basename "$CUSTOM_SCRIPTS_LUA") ($(ls -1 "$CUSTOM_SCRIPTS_D
 
 # --- Step 5: Generate requiredDataFiles.json ---
 echo ""
-echo "[5/8] Generating requiredDataFiles.json..."
+echo "[6/9] Generating requiredDataFiles.json..."
 
 REQ_JSON="$SERVER_DATA_DIR/requiredDataFiles.json"
 
@@ -220,7 +251,7 @@ echo "  Records: $(( ${#ORIGINAL_FILES[@]} + ${#mod_files[@]} ))"
 
 # --- Step 6: Check serverCore.lua (ensure customScripts is loaded) ---
 echo ""
-echo "[6/8] Checking serverCore.lua..."
+echo "[7/9] Checking serverCore.lua..."
 
 SERVER_CORE_LUA="$SERVER_SCRIPTS_DIR/serverCore.lua"
 
@@ -244,59 +275,14 @@ else
     fi
 fi
 
-# --- Step 7: Create mods.zip for distribution ---
+# --- Step 7: Create mods.tar.gz for distribution ---
 echo ""
-echo "[7/8] Creating mods.zip for distribution to players..."
+echo "[8/9] Creating mods.tar.gz for distribution to players..."
 
-# Collect plugins from server/data/
-mods_to_zip=()
-for file in "$SERVER_DATA_DIR"/*.esp "$SERVER_DATA_DIR"/*.ESP "$SERVER_DATA_DIR"/*.esm "$SERVER_DATA_DIR"/*.ESM \
-            "$SERVER_DATA_DIR"/*.omwaddon "$SERVER_DATA_DIR"/*.OMWADDON \
-            "$SERVER_DATA_DIR"/*.omwscripts "$SERVER_DATA_DIR"/*.OMWSCRIPTS \
-            "$SERVER_DATA_DIR"/*.omwgame "$SERVER_DATA_DIR"/*.OMWGAME; do
-    [ -f "$file" ] || continue
-    basename="$(basename "$file")"
+rm -f "$DATA_DIR/mods.tar.gz"
+package_mods_and_scripts "$DATA_DIR/mods.tar.gz"
 
-    skip=0
-    for orig in "${ORIGINAL_FILES[@]}"; do
-        if [ "$basename" = "$orig" ]; then
-            skip=1
-            break
-        fi
-    done
-
-    if [ "$skip" -eq 0 ]; then
-        mods_to_zip+=("$file")
-    fi
-done
-
-rm -f "$DATA_DIR/mods.zip"
-
-# Create a staging directory for the archive
-STAGE_DIR=$(mktemp -d)
-trap 'rm -rf "$STAGE_DIR"' EXIT
-
-# Copy plugins to staging
-for f in "${mods_to_zip[@]}"; do
-    cp "$f" "$STAGE_DIR/"
-done
-
-# Copy requiredDataFiles.json to staging
-if [ -f "$REQ_JSON" ]; then
-    cp "$REQ_JSON" "$STAGE_DIR/requiredDataFiles.json"
-fi
-
-# Create the archive
-staging_files=("$STAGE_DIR"/*)
-if [ ${#staging_files[@]} -gt 0 ] && [ "$(ls -A "$STAGE_DIR")" ]; then
-    cd "$STAGE_DIR"
-    zip -q "$DATA_DIR/mods.zip" -- *
-    cd "$SCRIPT_DIR"
-    echo "  Created: $DATA_DIR/mods.zip"
-    echo "  Contents: ${#mods_to_zip[@]} plugins, 1 requiredDataFiles.json"
-fi
-
-if [ ! -f "$DATA_DIR/mods.zip" ]; then
+if [ ! -f "$DATA_DIR/mods.tar.gz" ]; then
     echo "  No mod files to archive"
 fi
 
@@ -306,7 +292,7 @@ rm -f "$DATA_DIR/server-scripts.zip"
 rm -f "$DATA_DIR/client-scripts.zip"
 
 echo ""
-echo "=== All done. Restarting Docker container... ==="
+echo "[9/9] Restarting Docker container..."
 
 if command -v docker &>/dev/null && [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
     cd "$SCRIPT_DIR"
