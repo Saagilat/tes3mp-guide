@@ -5,33 +5,36 @@
 # This script is meant to be sourced (not executed directly).
 #
 # Variable requirements per function:
-#   check_disk_space()            — PLUGINS_DIR, SERVER_SCRIPTS_DIR, PLAYER_DIR, CELL_DIR
 #   package_mods_and_scripts()    — PLUGINS_DIR, SERVER_SCRIPTS_DIR, ORIGINAL_FILES
 #   package_world()               — PLAYER_DIR, CELL_DIR
 #
 # Functions provided:
-#   check_disk_space(backup_dir)                    — exit 1 if not enough space
 #   package_mods_and_scripts(output_file)           — plugins + scripts + requiredDataFiles.json
 #   package_world(output_file)                      — player/ + cell/
 #
 
 # ────────────────────────────────────────────────────────────────
-# Check disk space before backup
-#   Usage: check_disk_space <backup_dir>
+# Internal: Check disk space before packaging
+#   Usage: _check_disk_space <output_file> <dir1> [dir2 ...]
 #   Exits with code 1 if there isn't enough space (2x estimated size)
 # ────────────────────────────────────────────────────────────────
-check_disk_space() {
-    local backup_dir="$1"
+_check_disk_space() {
+    local output_file="$1"
+    shift
+    local dirs=("$@")
+
+    local backup_dir
+    backup_dir="$(dirname "$output_file")"
 
     if [ ! -d "$backup_dir" ]; then
-        echo "[package.sh] Creating backup directory: $backup_dir"
+        echo "[package.sh] Creating output directory: $backup_dir"
         mkdir -p "$backup_dir"
     fi
 
     local total_size=0
     local dir
 
-    for dir in "$PLUGINS_DIR" "$SERVER_SCRIPTS_DIR" "$PLAYER_DIR" "$CELL_DIR"; do
+    for dir in "${dirs[@]}"; do
         if [ -d "$dir" ] && [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
             local size
             size=$(du -sb "$dir" 2>/dev/null | cut -f1)
@@ -137,6 +140,9 @@ package_mods_and_scripts() {
         return 1
     fi
 
+    # Check disk space before proceeding
+    _check_disk_space "$output_file" "$PLUGINS_DIR" "$SERVER_SCRIPTS_DIR"
+
     local stage_dir
     stage_dir=$(mktemp -d)
     trap 'rm -rf "$stage_dir"' RETURN
@@ -215,6 +221,9 @@ package_world() {
         echo "[package.sh] ERROR: package_world requires an output file path" >&2
         return 1
     fi
+
+    # Check disk space before proceeding
+    _check_disk_space "$output_file" "$PLAYER_DIR" "$CELL_DIR"
 
     local stage_dir
     stage_dir=$(mktemp -d)

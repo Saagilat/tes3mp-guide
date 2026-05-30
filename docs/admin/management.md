@@ -13,7 +13,12 @@ All commands are run on the server via SSH. Replace `my-server` with your SSH ho
 | Edit config | `ssh my-server "nano /tes3mp-easy/container-data/tes3mp-server-default.cfg"` |
 | Edit Lua config | `ssh my-server "nano /tes3mp-easy/container-data/server/scripts/config.lua"` |
 | Edit ban list | `ssh my-server "nano /tes3mp-easy/container-data/server/data/banlist.json"` |
-| Sync mods | `tes3mp-easy-server-update-mods` |
+| Export mods | `tes3mp-easy-export-mods` |
+| Export world | `tes3mp-easy-export-world` |
+| Import mods (client) | `tes3mp-easy-import-mods` |
+| Generate required data files | `tes3mp-easy-generate-required-data` |
+| Import mods (server-side) | `ssh my-server "bash /tes3mp-easy/scripts/import_mods.sh"` |
+| Import world (server-side) | `ssh my-server "bash /tes3mp-easy/scripts/import_world.sh"` |
 
 ## HTTP endpoints
 
